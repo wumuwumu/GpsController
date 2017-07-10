@@ -62,6 +62,13 @@ dependencies {
     compile 'cn.bingoogolapple:bga-qrcodecore:1.1.7@aar'
     compile 'cn.bingoogolapple:bga-zxing:1.1.7@aar'
 
+    compile 'com.android.support:appcompat-v7:25.1.0'
+    compile 'com.android.support:recyclerview-v7:25.1.0'
+    compile 'pub.devrel:easypermissions:0.1.7'
     compile 'cn.bingoogolapple:bga-photopicker:1.2.3@aar'
+    compile 'cn.bingoogolapple:bga-adapter:1.1.8@aar'
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+
+    compile 'cn.finalteam.rxgalleryfinal:library:1.0.8'
 
 }

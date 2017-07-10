@@ -6,60 +6,58 @@ package com.sciento.wumu.gpscontroller.MqttModule;
 
 public class CurrentLocation {
 
-    private double Latitude; //纬度
-    private double Longitude; //经度
-    private  float Accuracy;  //精度
-    private double Altitude; //海拔
-    private  float Speed; //速度
-    private  float Bearing; //方向角
+    private double latitude; //纬度
+    private double longitude; //经度
+    private  float accuracy;  //精度
+    private double altitude; //海拔
+    private  float speed; //速度
+    private  float bearing; //方向角
 
     public double getLatitude() {
-        return Latitude;
+        return latitude;
     }
 
     public void setLatitude(double latitude) {
-        Latitude = latitude;
+        this.latitude = latitude;
     }
 
     public double getLongitude() {
-        return Longitude;
+        return longitude;
     }
 
     public void setLongitude(double longitude) {
-        Longitude = longitude;
+        this.longitude = longitude;
     }
 
     public float getAccuracy() {
-        return Accuracy;
+        return accuracy;
     }
 
-    public void setAccuracy(float Accuracy) {
-        this.Accuracy = Accuracy;
+    public void setAccuracy(float accuracy) {
+        this.accuracy = accuracy;
     }
 
     public double getAltitude() {
-        return Altitude;
+        return altitude;
     }
 
     public void setAltitude(double altitude) {
-        Altitude = altitude;
+        this.altitude = altitude;
     }
 
     public float getSpeed() {
-        return Speed;
+        return speed;
     }
 
     public void setSpeed(float speed) {
-        Speed = speed;
+        this.speed = speed;
     }
 
     public float getBearing() {
-        return Bearing;
+        return bearing;
     }
 
     public void setBearing(float bearing) {
-        Bearing = bearing;
+        this.bearing = bearing;
     }
-
-
 }

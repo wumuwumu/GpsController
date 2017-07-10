@@ -7,7 +7,7 @@
     tools:context="com.sciento.wumu.gpscontroller.DeviceModule.QRcodeActivity">
 
     <cn.bingoogolapple.qrcode.zxing.ZXingView
-        android:id="@+id/zxingview"
+        android:id="@+id/qrcodeview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:qrcv_animTime="1000"
@@ -40,9 +40,22 @@
         app:qrcv_topOffset="90dp"/>
 
     <Button
-        android:layout_width="50dp"
+        android:layout_width="40dp"
         android:layout_height="50dp"
-        android:layout_margin="10dp"
+        android:id="@+id/btn_qrcode_back"
+        android:layout_margin="5dp"
         android:background="@drawable/ic_chevron_left_black_24dp"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_find_image"
+        android:text="@string/title_find_image"
+        android:textColor="@color/colorWhite"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dp"
+        android:padding="10dp"
+        android:background="@color/colorPrimaryDark"/>
 
 </RelativeLayout>
