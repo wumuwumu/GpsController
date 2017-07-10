@@ -9,8 +9,10 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.Toast;
 
+import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
+import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.LocationSource;
 import com.amap.api.maps.MapView;
@@ -43,6 +45,8 @@ public class HomeFragment extends Fragment implements
     private LocationSource.OnLocationChangedListener mLocationChangedListener;
     private AMapLocationClient mlocationClient;
     private AMapLocationClientOption mLocationOption;
+
+
 
 
     private View view;
@@ -86,6 +90,8 @@ public class HomeFragment extends Fragment implements
 //aMap.getUiSettings().setMyLocationButtonEnabled(true);设置默认定位按钮是否显示，非必需设置。
         mainAmap.setMyLocationEnabled(true);// 设置为true表示启动显示定位蓝点，false表示隐藏定位蓝点并不进行定位，默认是false。
         mainAmap.setOnMyLocationChangeListener(this);
+
+
     }
 
 
@@ -125,7 +131,11 @@ public class HomeFragment extends Fragment implements
     @Override
     public void onMyLocationChange(Location location) {
 
-        LocationToJson locationToJson = new LocationToJson(location);
-        DeviceLocation.getInstance().sendLocation(MqttConfig.TOPICSEND,locationToJson.getJson());
+
+        DeviceLocation.getInstance().sendLocation(MqttConfig.TOPICSEND,LocationToJson.getJson(location));
     }
+
+
+
+
 }
