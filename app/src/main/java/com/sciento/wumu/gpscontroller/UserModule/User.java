@@ -8,6 +8,9 @@ public class User {
     private String username; //use phone
     private String usepasswd;
 
+    private String phone;
+
+
 
 
 }

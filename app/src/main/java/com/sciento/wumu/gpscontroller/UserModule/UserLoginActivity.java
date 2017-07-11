@@ -28,11 +28,13 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.sciento.wumu.gpscontroller.R;
+import com.sciento.wumu.gpscontroller.Utils.RegexUtils;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -59,7 +61,7 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
     private UserLoginTask mAuthTask = null;
 
     // UI references.
-    private AutoCompleteTextView mEmailView;
+    private AutoCompleteTextView mPhoneView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
@@ -69,7 +71,12 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_login);
         // Set up the login form.
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+        init();
+
+    }
+
+    private void init() {
+        mPhoneView = (AutoCompleteTextView) findViewById(R.id.phone);
         populateAutoComplete();
 
         mPasswordView = (EditText) findViewById(R.id.password);
@@ -84,7 +91,7 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
             }
         });
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+        Button mEmailSignInButton = (Button) findViewById(R.id.phone_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -96,6 +103,7 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
         mProgressView = findViewById(R.id.login_progress);
     }
 
+    //自动补全
     private void populateAutoComplete() {
         if (!mayRequestContacts()) {
             return;
@@ -104,6 +112,7 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
         getLoaderManager().initLoader(0, null, this);
     }
 
+    //获取权限
     private boolean mayRequestContacts() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return true;
@@ -112,7 +121,7 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
             return true;
         }
         if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-            Snackbar.make(mEmailView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
+            Snackbar.make(mPhoneView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
                     .setAction(android.R.string.ok, new View.OnClickListener() {
                         @Override
                         @TargetApi(Build.VERSION_CODES.M)
@@ -151,33 +160,43 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
         }
 
         // Reset errors.
-        mEmailView.setError(null);
+        mPhoneView.setError(null);
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = mEmailView.getText().toString();
+        String phone = mPhoneView.getText().toString();
         String password = mPasswordView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
 
-        // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
+        // 手机验证
+        if (TextUtils.isEmpty(phone)) {
+            mPhoneView.setError(getString(R.string.error_field_required));
+            focusView = mPhoneView;
+            cancel = true;
+            //Toast.makeText(this, R.string.tip_account_empty, Toast.LENGTH_LONG).show();
+        }
+        // 账号不匹配手机号格式（11位数字且以1开头）
+        else if ( !RegexUtils.checkMobile(phone)) {
+                mPhoneView.setError(getString(R.string.tip_phone_regex_not_right));
+                focusView = mPhoneView;
+                cancel = true;
+                //Toast.makeText(this, R.string.tip_account_regex_not_right, Toast.LENGTH_LONG).show();
+            }
+
+        if (TextUtils.isEmpty(password) ) {
+            mPasswordView.setError(getString(R.string.tip_password_can_not_be_empty));
             focusView = mPasswordView;
+            cancel = true;
+            //Toast.makeText(this, R.string.tip_password_can_not_be_empty, Toast.LENGTH_LONG).show();
+        }else if(password.length()<6){
+            mPhoneView.setError(getString(R.string.error_invalid_password));
+            focusView = mPhoneView;
             cancel = true;
         }
 
-        // Check for a valid email address.
-        if (TextUtils.isEmpty(email)) {
-            mEmailView.setError(getString(R.string.error_field_required));
-            focusView = mEmailView;
-            cancel = true;
-        } else if (!isEmailValid(email)) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
-            focusView = mEmailView;
-            cancel = true;
-        }
+
 
         if (cancel) {
             // There was an error; don't attempt login and focus the first
@@ -187,20 +206,12 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
+            mAuthTask = new UserLoginTask(phone, password);
             mAuthTask.execute((Void) null);
         }
     }
 
-    private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
-        return email.contains("@");
-    }
 
-    private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() > 4;
-    }
 
     /**
      * Shows the progress UI and hides the login form.
@@ -278,7 +289,7 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
                 new ArrayAdapter<>(UserLoginActivity.this,
                         android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
-        mEmailView.setAdapter(adapter);
+        mPhoneView.setAdapter(adapter);
     }
 
 
@@ -292,9 +303,10 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
         int IS_PRIMARY = 1;
     }
 
+
+
     /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
+     *异步任务,内部类
      */
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
