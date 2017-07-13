@@ -19,7 +19,7 @@ import com.amap.api.maps.MapView;
 import com.amap.api.maps.TextureMapView;
 import com.amap.api.maps.UiSettings;
 import com.amap.api.maps.model.MyLocationStyle;
-import com.sciento.wumu.gpscontroller.ConfigModule.MqttConfig;
+import com.sciento.wumu.gpscontroller.ConfigModule.Config;
 import com.sciento.wumu.gpscontroller.MqttModule.DeviceLocation;
 import com.sciento.wumu.gpscontroller.MqttModule.LocationToJson;
 import com.sciento.wumu.gpscontroller.R;
@@ -132,7 +132,7 @@ public class HomeFragment extends Fragment implements
     public void onMyLocationChange(Location location) {
 
 
-        DeviceLocation.getInstance().sendLocation(MqttConfig.TOPICSEND,LocationToJson.getJson(location));
+        //DeviceLocation.getInstance().sendLocation(Config.TOPICSEND,LocationToJson.getJson(location));
     }
 
 

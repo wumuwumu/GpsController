@@ -60,4 +60,6 @@ public class CurrentLocation {
     public void setBearing(float bearing) {
         this.bearing = bearing;
     }
+
+
 }

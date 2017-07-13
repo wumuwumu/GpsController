@@ -28,6 +28,8 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.BODY_SENSORS"/>
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
 
     <application
         android:name=".CommonModule.AppContext"
@@ -39,31 +41,25 @@
         android:theme="@style/AppTheme">
         <meta-data
             android:name="com.amap.api.v2.apikey"
-            android:value="86975b39c203c08712968ccc3ed87be1" />
+            android:value="3169469ddd76819e17d9cf2f6aa69efe" />
 
         <service android:name="org.eclipse.paho.android.service.MqttService" />
         <service android:name="com.amap.api.location.APSService" />
 
         <activity android:name=".CommonModule.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity android:name=".DeviceModule.QRcodeActivity" />
         <activity
             android:name=".UserModule.UserLoginActivity"
-            android:label="@string/title_activity_user_login">
+            android:label="@string/action_sign_in">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".LoginActivity"
-            android:label="@string/title_activity_login"></activity>
+            android:name=".UserModule.RegisterActivity"
+            android:theme="@style/AppTheme"></activity>
     </application>
-
 </manifest>

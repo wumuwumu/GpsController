@@ -12,47 +12,43 @@ import com.google.gson.GsonBuilder;
 
 public class LocationToJson {
 
+    private static  GsonBuilder builder;
+    private static Gson gson;
 
+    static {
+         builder = new GsonBuilder();
+        builder.setVersion(1.0);
+        gson = builder.create();
+    }
 
 
 
     public static String getJson(Location location){
-        CurrentLocation currentLocation = new CurrentLocation();
-        currentLocation.setLatitude(location.getLatitude());
-        currentLocation.setLongitude(location.getLongitude());
-        currentLocation.setAccuracy(location.getAccuracy());
-        currentLocation.setAltitude(location.getAltitude());
-        currentLocation.setSpeed(location.getSpeed());
-        currentLocation.setBearing(location.getBearing());
+        CurrentLocationController currentLocation = new CurrentLocationController(location);
 
-
-        final GsonBuilder builder = new GsonBuilder();
-        builder.setVersion(1.0);
-        final Gson gson = builder.create();
-        final String json = gson.toJson(currentLocation);
+        final String json = gson.toJson(currentLocation.getCurrentLocation());
 
         return json;
 
     }
 
     public static String getJson(AMapLocation location){
-        CurrentLocation currentLocation = new CurrentLocation();
-        currentLocation.setLatitude(location.getLatitude());
-        currentLocation.setLongitude(location.getLongitude());
-        currentLocation.setAccuracy(location.getAccuracy());
-        currentLocation.setAltitude(location.getAltitude());
-        currentLocation.setSpeed(location.getSpeed());
-        currentLocation.setBearing(location.getBearing());
+        CurrentLocationController currentLocation = new CurrentLocationController(location);
 
 
-        final GsonBuilder builder = new GsonBuilder();
-        builder.setVersion(1.0);
-        final Gson gson = builder.create();
         final String json = gson.toJson(currentLocation);
 
         return json;
 
     }
+
+    public static <T> T getPojo(String jsonData, Class<T> type) {
+
+                 T result = gson.fromJson(jsonData, type);
+                 return result;
+             }
+
+
 
 
 }

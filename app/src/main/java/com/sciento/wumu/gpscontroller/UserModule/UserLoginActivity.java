@@ -3,83 +3,122 @@ package com.sciento.wumu.gpscontroller.UserModule;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
-
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.ContactsContract;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.sciento.wumu.gpscontroller.CommonModule.AppContext;
+import com.sciento.wumu.gpscontroller.CommonModule.MainActivity;
+import com.sciento.wumu.gpscontroller.ConfigModule.Config;
+import com.sciento.wumu.gpscontroller.ConfigModule.StateCode;
+import com.sciento.wumu.gpscontroller.ConfigModule.UserState;
 import com.sciento.wumu.gpscontroller.R;
+import com.sciento.wumu.gpscontroller.Utils.NetworkUtils;
+import com.sciento.wumu.gpscontroller.Utils.ProgressDialogUtils;
 import com.sciento.wumu.gpscontroller.Utils.RegexUtils;
+import com.sciento.wumu.gpscontroller.View.CleanEditText;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via email/password.
  */
-public class UserLoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class UserLoginActivity extends AppCompatActivity {
 
-    /**
-     * Id to identity READ_CONTACTS permission request.
-     */
+    @BindView(R.id.tv_register)
+    TextView tvRegister;
+    @BindView(R.id.tv_forget_passwd)
+    TextView tvForgetPasswd;
+
     private static final int REQUEST_READ_CONTACTS = 0;
 
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
+    private static final int MSG_REQUEST_ERROR = 500;
+
+
+
     private UserLoginTask mAuthTask = null;
 
     // UI references.
-    private AutoCompleteTextView mPhoneView;
-    private EditText mPasswordView;
+    private CleanEditText mPhoneView;
+    private CleanEditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+
+
+    Handler loginHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            mAuthTask = null;
+            showProgress(false);
+            ProgressDialogUtils.getInstance().dismiss();
+            switch (msg.what) {
+                case StateCode.USER_SUCCESS:
+                    UserState.issignin = true;
+                    Intent intent = new Intent(UserLoginActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+
+                    break;
+                case StateCode.USER_SIGN_NOMATCH:
+                    mPasswordView.setError(getString(R.string.error_incorrect_password));
+                    mPasswordView.requestFocus();
+                    break;
+
+                case MSG_REQUEST_ERROR:
+
+                    break;
+            }
+
+            super.handleMessage(msg);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_login);
+        ButterKnife.bind(this);
         // Set up the login form.
         init();
 
     }
 
     private void init() {
-        mPhoneView = (AutoCompleteTextView) findViewById(R.id.phone);
-        populateAutoComplete();
+        mPhoneView = (CleanEditText) findViewById(R.id.phone);
 
-        mPasswordView = (EditText) findViewById(R.id.password);
+
+        mPasswordView = (CleanEditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -103,14 +142,6 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
         mProgressView = findViewById(R.id.login_progress);
     }
 
-    //自动补全
-    private void populateAutoComplete() {
-        if (!mayRequestContacts()) {
-            return;
-        }
-
-        getLoaderManager().initLoader(0, null, this);
-    }
 
     //获取权限
     private boolean mayRequestContacts() {
@@ -122,7 +153,7 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
         }
         if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
             Snackbar.make(mPhoneView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
-                    .setAction(android.R.string.ok, new View.OnClickListener() {
+                    .setAction(android.R.string.ok, new OnClickListener() {
                         @Override
                         @TargetApi(Build.VERSION_CODES.M)
                         public void onClick(View v) {
@@ -133,19 +164,6 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
             requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
         }
         return false;
-    }
-
-    /**
-     * Callback received when a permissions request has been completed.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_READ_CONTACTS) {
-            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                populateAutoComplete();
-            }
-        }
     }
 
 
@@ -178,24 +196,23 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
             //Toast.makeText(this, R.string.tip_account_empty, Toast.LENGTH_LONG).show();
         }
         // 账号不匹配手机号格式（11位数字且以1开头）
-        else if ( !RegexUtils.checkMobile(phone)) {
-                mPhoneView.setError(getString(R.string.tip_phone_regex_not_right));
-                focusView = mPhoneView;
-                cancel = true;
-                //Toast.makeText(this, R.string.tip_account_regex_not_right, Toast.LENGTH_LONG).show();
-            }
+        else if (!RegexUtils.checkMobile(phone)) {
+            mPhoneView.setError(getString(R.string.tip_phone_regex_not_right));
+            focusView = mPhoneView;
+            cancel = true;
+            //Toast.makeText(this, R.string.tip_account_regex_not_right, Toast.LENGTH_LONG).show();
+        }
 
-        if (TextUtils.isEmpty(password) ) {
+        if (TextUtils.isEmpty(password)) {
             mPasswordView.setError(getString(R.string.tip_password_can_not_be_empty));
             focusView = mPasswordView;
             cancel = true;
             //Toast.makeText(this, R.string.tip_password_can_not_be_empty, Toast.LENGTH_LONG).show();
-        }else if(password.length()<6){
+        } else if (password.length() < 6) {
             mPhoneView.setError(getString(R.string.error_invalid_password));
             focusView = mPhoneView;
             cancel = true;
         }
-
 
 
         if (cancel) {
@@ -206,11 +223,65 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(phone, password);
-            mAuthTask.execute((Void) null);
+            ProgressDialogUtils.getInstance().dismiss();
+            ProgressDialogUtils.getInstance().show(
+                    UserLoginActivity.this, "正在请求...");
+            //mAuthTask = new UserLoginTask(phone, password);
+            //mAuthTask.execute((Void) null);
+
+            Map<String, String> params = new HashMap<>();
+            params.put("username", phone);
+            params.put("userpswd", password);
+            JSONObject jsonObject = new JSONObject(params);// 将 Map 转为 JsonObject 的参数
+            // 参数：[请求方式][请求链接][请求参数][成功回调][失败回调]
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                    Request.Method.POST,
+                    Config.HTTPSERVER,
+                    jsonObject,
+                    new Response.Listener<JSONObject>() {
+
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            int code = 0;
+                            try {
+                                code = response.getInt("status");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            if (code == StateCode.USER_SUCCESS) {
+                                Message msg = Message.obtain();
+                                msg.what = StateCode.USER_SUCCESS;
+                                loginHandler.sendMessage(msg);
+                            } else {
+                                Message msg = Message.obtain();
+                                msg.what = StateCode.USER_SIGN_NOMATCH;
+                                loginHandler.sendMessage(msg);
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            if (!NetworkUtils.isConnected(UserLoginActivity.this)) {
+                                Toast.makeText(UserLoginActivity.this, R.string.error_network_dis,
+                                        Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(UserLoginActivity.this, R.string.error_link_server,
+                                        Toast.LENGTH_SHORT).show();
+                            }
+
+                            Message msg = Message.obtain();
+                            msg.what = MSG_REQUEST_ERROR;
+                            loginHandler.sendMessage(msg);
+
+                        }
+                    });
+            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                    20 * 1000, 1, 1.0f));
+            jsonObjectRequest.setTag("doJsonPost");// 设置标签
+            AppContext.getRequestQueue().add(jsonObjectRequest);// 将请求添加进队列
         }
     }
-
 
 
     /**
@@ -249,39 +320,6 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
         }
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return new CursorLoader(this,
-                // Retrieve data rows for the device user's 'profile' contact.
-                Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI,
-                        ContactsContract.Contacts.Data.CONTENT_DIRECTORY), ProfileQuery.PROJECTION,
-
-                // Select only email addresses.
-                ContactsContract.Contacts.Data.MIMETYPE +
-                        " = ?", new String[]{ContactsContract.CommonDataKinds.Email
-                .CONTENT_ITEM_TYPE},
-
-                // Show primary email addresses first. Note that there won't be
-                // a primary email address if the user hasn't specified one.
-                ContactsContract.Contacts.Data.IS_PRIMARY + " DESC");
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        List<String> emails = new ArrayList<>();
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            emails.add(cursor.getString(ProfileQuery.ADDRESS));
-            cursor.moveToNext();
-        }
-
-        addEmailsToAutoComplete(emails);
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> cursorLoader) {
-
-    }
 
     private void addEmailsToAutoComplete(List<String> emailAddressCollection) {
         //Create adapter to tell the AutoCompleteTextView what to show in its dropdown list.
@@ -289,7 +327,7 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
                 new ArrayAdapter<>(UserLoginActivity.this,
                         android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
-        mPhoneView.setAdapter(adapter);
+        //mPhoneView.setAdapter(adapter);
     }
 
 
@@ -304,9 +342,8 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
     }
 
 
-
     /**
-     *异步任务,内部类
+     * 异步任务,内部类
      */
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
@@ -322,20 +359,6 @@ public class UserLoginActivity extends AppCompatActivity implements LoaderCallba
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
 
             // TODO: register the new account here.
             return true;

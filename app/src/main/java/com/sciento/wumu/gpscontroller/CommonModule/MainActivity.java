@@ -1,13 +1,10 @@
 package com.sciento.wumu.gpscontroller.CommonModule;
 
-import android.Manifest;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 
@@ -15,11 +12,9 @@ import com.sciento.wumu.gpscontroller.DeviceModule.DeviceFragment;
 import com.sciento.wumu.gpscontroller.HomeModule.HomeFragment;
 import com.sciento.wumu.gpscontroller.PersonModule.PersonFragment;
 import com.sciento.wumu.gpscontroller.R;
+import com.sciento.wumu.gpscontroller.TestModule.ShowInfoFragment;
 import com.sciento.wumu.gpscontroller.View.NoScrollViewPager;
 import com.sciento.wumu.gpscontroller.adapter.ViewPagerAdapter;
-import com.yanzhenjie.permission.AndPermission;
-import com.yanzhenjie.permission.Rationale;
-import com.yanzhenjie.permission.RationaleListener;
 
 public class MainActivity extends DeviceModuleBaseActivity {
 
@@ -32,6 +27,7 @@ public class MainActivity extends DeviceModuleBaseActivity {
     HomeFragment homeFragment = null;
     PersonFragment personFragment =null;
     DeviceFragment deviceFragment =null;
+    ShowInfoFragment showInfoFragment = null;
     MenuItem prevMenuItem =null;
 
     private static final String TAG = "MainActivity";
@@ -112,8 +108,10 @@ public class MainActivity extends DeviceModuleBaseActivity {
         homeFragment = HomeFragment.newInstance();
         deviceFragment = DeviceFragment.newInstance();
         personFragment = PersonFragment.newInstance();
+        showInfoFragment = ShowInfoFragment.newInstance();
         viewPagerAdapter.addFragment(homeFragment);
-        viewPagerAdapter.addFragment(deviceFragment);
+//        viewPagerAdapter.addFragment(deviceFragment);
+        viewPagerAdapter.addFragment(showInfoFragment);
         viewPagerAdapter.addFragment(personFragment);
         viewPager.setOffscreenPageLimit(2);
         viewPager.setAdapter(viewPagerAdapter);

@@ -1,11 +1,12 @@
 package com.sciento.wumu.gpscontroller.MqttModule;
 
 import android.app.Application;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.sciento.wumu.gpscontroller.CommonModule.AppContext;
-import com.sciento.wumu.gpscontroller.ConfigModule.MqttConfig;
+import com.sciento.wumu.gpscontroller.ConfigModule.Config;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -29,8 +30,8 @@ public class DeviceLocation {
     private final String TAG ="MqttConnect";
 
     private DeviceLocation(){
-       mqttAndroidClient =  new MqttAndroidClient(AppContext.getContext(), MqttConfig.MQTTSERVER,
-                MqttConfig.CLIENTID);
+       mqttAndroidClient =  new MqttAndroidClient(AppContext.getContext(), Config.MQTTSERVER,
+                Config.CLIENTID);
     }
 
     public static synchronized DeviceLocation getInstance()
@@ -40,15 +41,26 @@ public class DeviceLocation {
 
     public void connect()
     {
+
         try {
             token = mqttAndroidClient.connect();
-            token.setActionCallback(new IMqttActionListener() {
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
+
+        token.setActionCallback(new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     // We are connected
                     isConnected = true;
                     Log.d(TAG, "onSuccess");
                     Toast.makeText(AppContext.getContext(),"suc",Toast.LENGTH_SHORT).show();
+                    try {
+                        DeviceLocation.getInstance().getMqttAndroidClient().subscribe(Config.TOPICSEND, 0);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
 
                 }
 
@@ -61,9 +73,9 @@ public class DeviceLocation {
 
                 }
             });
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
+
+
+
     }
 
     public void sendLocation(String topic , String strmessage){
@@ -81,6 +93,10 @@ public class DeviceLocation {
             e.printStackTrace();
         }
 
+    }
+
+    public MqttAndroidClient getMqttAndroidClient(){
+        return mqttAndroidClient;
     }
 
 
