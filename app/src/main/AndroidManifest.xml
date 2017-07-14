@@ -48,6 +48,7 @@
 
         <activity android:name=".CommonModule.MainActivity"></activity>
         <activity android:name=".DeviceModule.QRcodeActivity" />
+
         <activity
             android:name=".UserModule.UserLoginActivity"
             android:label="@string/action_sign_in">
@@ -57,9 +58,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".UserModule.UserRegisterActivity"
             android:theme="@style/AppTheme" />
+
         <activity android:name=".UserModule.UserForgetActivity"></activity>
     </application>
 

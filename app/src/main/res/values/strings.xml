@@ -41,4 +41,7 @@
     <string name="error_double_passwd_different">两次输入的密码不同</string>
     <string name="count_down">%ss</string>
 
+    <!--忘记密码-->
+    <string name="str_reset_passwd">重置密码</string>
+
 </resources>

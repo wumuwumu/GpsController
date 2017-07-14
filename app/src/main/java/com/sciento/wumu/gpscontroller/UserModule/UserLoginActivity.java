@@ -290,8 +290,8 @@ public class UserLoginActivity extends AppCompatActivity {
     void OnClick(View view){
         switch (view.getId()){
             case R.id.tv_forget_passwd:
-//                Intent foregetIntent  = new Intent(UserLoginActivity.this,);
-
+                Intent foregetIntent  = new Intent(UserLoginActivity.this,UserForgetActivity.class);
+                startActivity(foregetIntent);
                 break;
             case R.id.tv_register:
                 Intent registerIntent  = new Intent(UserLoginActivity.this,UserRegisterActivity.class);
