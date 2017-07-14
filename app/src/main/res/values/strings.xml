@@ -38,5 +38,7 @@
     <string name="str_usename">用户名</string>
     <string name="re_enter_passwwd">重新输入密码</string>
     <string name="str_have_account_login">有账号，请登录</string>
+    <string name="error_double_passwd_different">两次输入的密码不同</string>
+    <string name="count_down">%ss</string>
 
 </resources>

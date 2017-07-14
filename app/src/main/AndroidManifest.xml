@@ -28,7 +28,7 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <uses-permission android:name="android.permission.BODY_SENSORS"/>
+    <uses-permission android:name="android.permission.BODY_SENSORS" />
     <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
 
     <application
@@ -46,20 +46,21 @@
         <service android:name="org.eclipse.paho.android.service.MqttService" />
         <service android:name="com.amap.api.location.APSService" />
 
-        <activity android:name=".CommonModule.MainActivity">
-
-        </activity>
+        <activity android:name=".CommonModule.MainActivity"></activity>
         <activity android:name=".DeviceModule.QRcodeActivity" />
         <activity
             android:name=".UserModule.UserLoginActivity"
             android:label="@string/action_sign_in">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".UserModule.RegisterActivity"
-            android:theme="@style/AppTheme"></activity>
+            android:name=".UserModule.UserRegisterActivity"
+            android:theme="@style/AppTheme" />
+        <activity android:name=".UserModule.UserForgetActivity"></activity>
     </application>
+
 </manifest>
