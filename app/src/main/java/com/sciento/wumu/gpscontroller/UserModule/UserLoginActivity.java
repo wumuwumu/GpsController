@@ -61,6 +61,9 @@ public class UserLoginActivity extends AppCompatActivity {
     TextView tvRegister;
     @BindView(R.id.tv_forget_passwd)
     TextView tvForgetPasswd;
+    @BindView(R.id.tv_skip)
+    TextView tvSkip;
+
 
     private static final int REQUEST_READ_CONTACTS = 0;
 
@@ -286,7 +289,8 @@ public class UserLoginActivity extends AppCompatActivity {
 
 
     @OnClick({R.id.tv_forget_passwd,
-            R.id.tv_register})
+            R.id.tv_register,
+            R.id.tv_skip})
     void OnClick(View view){
         switch (view.getId()){
             case R.id.tv_forget_passwd:
@@ -296,6 +300,10 @@ public class UserLoginActivity extends AppCompatActivity {
             case R.id.tv_register:
                 Intent registerIntent  = new Intent(UserLoginActivity.this,UserRegisterActivity.class);
                 startActivity(registerIntent);
+                break;
+            case R.id.tv_skip:
+                Intent skipIntent = new Intent(UserLoginActivity.this,MainActivity.class);
+                startActivity(skipIntent);
                 break;
         }
     }

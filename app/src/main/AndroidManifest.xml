@@ -46,7 +46,13 @@
         <service android:name="org.eclipse.paho.android.service.MqttService" />
         <service android:name="com.amap.api.location.APSService" />
 
-        <activity android:name=".CommonModule.MainActivity"></activity>
+        <activity android:name=".CommonModule.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity android:name=".DeviceModule.QRcodeActivity" />
 
         <activity

@@ -110,8 +110,8 @@ public class MainActivity extends DeviceModuleBaseActivity {
         personFragment = PersonFragment.newInstance();
         showInfoFragment = ShowInfoFragment.newInstance();
         viewPagerAdapter.addFragment(homeFragment);
-//        viewPagerAdapter.addFragment(deviceFragment);
-        viewPagerAdapter.addFragment(showInfoFragment);
+        viewPagerAdapter.addFragment(deviceFragment);
+//        viewPagerAdapter.addFragment(showInfoFragment);
         viewPagerAdapter.addFragment(personFragment);
         viewPager.setOffscreenPageLimit(2);
         viewPager.setAdapter(viewPagerAdapter);

@@ -122,7 +122,7 @@ public class ShowInfoFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        view = inflater.inflate(R.layout.fragment_home, container, false);
+        view = inflater.inflate(R.layout.fragment_showinfo, container, false);
         unbinder = ButterKnife.bind(this, view);
         mainMapview.onCreate(savedInstanceState);// 此方法必须重写
 

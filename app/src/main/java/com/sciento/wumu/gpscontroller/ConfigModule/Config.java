@@ -18,4 +18,10 @@ public class Config {
     public static final String HTTPSERVER =  "http://192.168.0.118:8080/signin";
 
 
+    //db
+    public static final String REALMDB= "gps.realm";
+    public static final int dbVersion = 1;
+
+
+
 }

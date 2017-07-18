@@ -44,4 +44,12 @@
     <!--忘记密码-->
     <string name="str_reset_passwd">重置密码</string>
 
+    <!--跳过-->
+    <string name="str_skip">跳过</string>
+
+    <!--设备-->
+    <string name="str_my_device">我的设备</string>
+    <string name="havenot_device">没有设备</string>
+    <string name="str_offline_device">离线设备</string>
+    <string name="str_bundle_device">在线设备</string>
 </resources>
