@@ -52,4 +52,9 @@
     <string name="havenot_device">没有设备</string>
     <string name="str_offline_device">离线设备</string>
     <string name="str_bundle_device">在线设备</string>
+    <string name="str_add_device">添加设备</string>
+    <string name="str_online">在线</string>
+    <string name="str_offine">离线</string>
+    <string name="str_unbind">解除绑定</string>
+    <string name="str_unbind_device">解除绑定设备</string>
 </resources>

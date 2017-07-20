@@ -27,7 +27,7 @@ public class BaseFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        sharedPreferences = getActivity().getSharedPreferences(SPF_Name, Context.MODE_PRIVATE);
+//        sharedPreferences = getActivity().getSharedPreferences(SPF_Name, Context.MODE_PRIVATE);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 }

@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -16,9 +18,13 @@ import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.Rationale;
 import com.yanzhenjie.permission.RationaleListener;
 
+
+import org.greenrobot.eventbus.EventBus;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cn.bingoogolapple.androidcommon.adapter.BGARecyclerViewAdapter;
 import cn.bingoogolapple.photopicker.activity.BGAPhotoPickerActivity;
 import cn.bingoogolapple.qrcode.core.QRCodeView;
 import cn.bingoogolapple.qrcode.zxing.QRCodeDecoder;
@@ -36,6 +42,23 @@ public class QRcodeActivity extends AppCompatActivity implements QRCodeView.Dele
     @BindView(R.id.btn_find_image)
     Button btnFindImage;
 
+    private final int MSG_QRCODE_GET = 12;
+
+
+    Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what){
+                case MSG_QRCODE_GET:
+                    Bundle bundle = msg.getData();
+                    String deviceId = bundle.getString("deviceId");
+                    EventBus.getDefault().post(deviceId);
+                    finish();
+                    break;
+            }
+            super.handleMessage(msg);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,9 +67,11 @@ public class QRcodeActivity extends AppCompatActivity implements QRCodeView.Dele
         ButterKnife.bind(this);
         getpermission();
         init();
+
     }
 
     private void init() {
+
         QRCodeView.setDelegate(this);
 
     }
@@ -70,9 +95,10 @@ public class QRcodeActivity extends AppCompatActivity implements QRCodeView.Dele
     @Override
     protected void onStart() {
         super.onStart();
+        EventBus.getDefault().unregister(this);
         QRCodeView.startCamera();
         QRCodeView.showScanRect();
-        QRCodeView.startSpot();
+
     }
 
     @Override
@@ -85,12 +111,27 @@ public class QRcodeActivity extends AppCompatActivity implements QRCodeView.Dele
     @Override
     protected void onDestroy() {
         QRCodeView.onDestroy();
+        EventBus.getDefault().unregister(this);
         super.onDestroy();
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        QRCodeView.startSpot();
     }
 
     @Override
     public void onScanQRCodeSuccess(String result) {
-        Toast.makeText(this, result, Toast.LENGTH_SHORT).show();
+       // Toast.makeText(this, result, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(QRcodeActivity.this, result, Toast.LENGTH_SHORT).show();
+        Message message = new Message();
+        message.what= MSG_QRCODE_GET;
+        Bundle bundle = new Bundle();
+        bundle.putString("deviceId",result);
+        message.setData(bundle);
+        handler.sendMessage(message);
         QRCodeView.startSpot();
     }
 
@@ -124,7 +165,7 @@ public class QRcodeActivity extends AppCompatActivity implements QRCodeView.Dele
                     if (TextUtils.isEmpty(result)) {
                         Toast.makeText(QRcodeActivity.this, "未发现二维码", Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(QRcodeActivity.this, result, Toast.LENGTH_SHORT).show();
+
                     }
                 }
             }.execute();

@@ -1,9 +1,11 @@
 package com.sciento.wumu.gpscontroller.DeviceModule;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -12,18 +14,29 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.sciento.wumu.gpscontroller.ConfigModule.UserState;
 import com.sciento.wumu.gpscontroller.DeviceSdk.Device;
+import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceController;
+import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceListAdapter;
 import com.sciento.wumu.gpscontroller.R;
-import com.sciento.wumu.gpscontroller.View.NoScrollViewPager;
+import com.sciento.wumu.gpscontroller.Utils.ProgressDialogUtils;
 import com.sciento.wumu.gpscontroller.View.SlideListView;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -65,33 +78,49 @@ public class DeviceFragment extends DeviceBaseFragment {
     private final int MSG_CONTTROLLER = 12;
     private final int MSG_BOUND = 13;
     private final int MSG_UNBOUND = 14;
+    private final int MSG_UPDATEUI = 15;
 
 
     //
-    public static List<String> boundMessage;
+    public static List<String> boundMessage = new ArrayList<>();
+
+    List<Device> boundDeviceList;
+    List<Device> offlineDevicesList;
+
+
+    private DeviceListAdapter deviceListAdapter;
 
     private String userphone;
     private String token;
 
 
-
-
-    Handler handler = new Handler(){
+    Handler handler = new Handler() {
 
         @Override
         public void handleMessage(Message msg) {
-            switch (msg.what){
+            switch (msg.what) {
                 case MSG_GET_DEVICE_LIST:
-                    if(!userphone.isEmpty() && !token.isEmpty()){
+//                    if(!userphone.isEmpty() && !token.isEmpty()){
+//
+//                    }
 
-                    }
 
+                    break;
 
+                case MSG_UPDATEUI:
+                    updateUi();
+                    break;
+                case MSG_UNBOUND:
+                    ProgressDialogUtils.getInstance().show(getActivity(),
+                            getString(R.string.str_unbind_device));
+                    DeviceController.getInstance().unBindDevice(userphone,token,);
                     break;
             }
             super.handleMessage(msg);
         }
     };
+
+
 
 
     public static DeviceFragment newInstance() {
@@ -139,19 +168,19 @@ public class DeviceFragment extends DeviceBaseFragment {
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
 
         //init view
-        icBundleDevice = (View)view.findViewById(R.id.ic_bound_devices);
-        icOfflineDevice = (View)view.findViewById(R.id.ic_offline_devices);
+        icBundleDevice = (View) view.findViewById(R.id.ic_bound_devices);
+        icOfflineDevice = (View) view.findViewById(R.id.ic_offline_devices);
 
-        tvBundleDeviceStatus = (TextView)icBundleDevice.findViewById(R.id.tv_device_staus);
-        tvOfflineDeviceStatus = (TextView)icOfflineDevice.findViewById(R.id.tv_device_staus);
+        tvBundleDeviceStatus = (TextView) icBundleDevice.findViewById(R.id.tv_device_staus);
+        tvOfflineDeviceStatus = (TextView) icOfflineDevice.findViewById(R.id.tv_device_staus);
 
-        llBundleDevice = (LinearLayout)icBundleDevice.findViewById(R.id.ll_no_device);
-        llOfflineDevice= (LinearLayout)icOfflineDevice.findViewById(R.id.ll_no_device);
+        llBundleDevice = (LinearLayout) icBundleDevice.findViewById(R.id.ll_no_device);
+        llOfflineDevice = (LinearLayout) icOfflineDevice.findViewById(R.id.ll_no_device);
 
-        slvBundleDevice = (SlideListView)icBundleDevice.findViewById(R.id.slideListView);
-        slvOfflineDevice = (SlideListView)icOfflineDevice.findViewById(R.id.slideListView);
+        slvBundleDevice = (SlideListView) icBundleDevice.findViewById(R.id.slideListView);
+        slvOfflineDevice = (SlideListView) icOfflineDevice.findViewById(R.id.slideListView);
 
-        nestedScrollView = (NestedScrollView)view.findViewById(R.id.netstedscrollview);
+        nestedScrollView = (NestedScrollView) view.findViewById(R.id.netstedscrollview);
 
         //init value
         tvBundleDeviceStatus.setText(getString(R.string.str_bundle_device));
@@ -159,19 +188,104 @@ public class DeviceFragment extends DeviceBaseFragment {
 
 
         //swipe refresh
-        swipeRefreshLayout = (SwipeRefreshLayout)view.findViewById(R.id.swiperefreshlayout);
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swiperefreshlayout);
 
     }
 
+    private void updateUi() {
+        boundDeviceList = new ArrayList<>();
+        offlineDevicesList = new ArrayList<>();
+
+        for(Device device : DeviceBaseFragment.deviceslist){
+            if(device.getStatus() == true){
+                boundDeviceList.add(device);
+            }else {
+                offlineDevicesList.add(device);
+            }
+        }
+
+        if(boundDeviceList.isEmpty()){
+            slvBundleDevice.setVisibility(View.GONE);
+            llBundleDevice.setVisibility(View.VISIBLE);
+        }else {
+            deviceListAdapter = new DeviceListAdapter(getActivity(), boundDeviceList);
+            deviceListAdapter.setHandler(handler);
+            slvBundleDevice.setAdapter(deviceListAdapter);
+            slvBundleDevice.setVisibility(View.VISIBLE);
+            llBundleDevice.setVisibility(View.GONE);
+        }
+
+        if(offlineDevicesList.isEmpty()){
+            slvOfflineDevice.setVisibility(View.GONE);
+            llOfflineDevice.setVisibility(View.VISIBLE);
+        }else {
+            deviceListAdapter = new DeviceListAdapter(getActivity(), offlineDevicesList);
+            deviceListAdapter.setHandler(handler);
+            slvOfflineDevice.setAdapter(deviceListAdapter);
+            slvOfflineDevice.setVisibility(View.VISIBLE);
+            llOfflineDevice.setVisibility(View.GONE);
+        }
+
+    }
+
+    @Override
+    public void onStart() {
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
+        super.onStart();
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (boundMessage.size() != 0) {
+            ProgressDialogUtils.getInstance().show(getActivity(), getString(R.string.str_add_device));
+            DeviceController.getInstance().bindDevice(userphone, token, boundMessage.get(0));
+
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        boundMessage.clear();
+    }
+
+    @Override
+    public void onStop() {
+
+        super.onStop();
+    }
 
     @Override
     public void onDestroyView() {
+        EventBus.getDefault().unregister(this);
         super.onDestroyView();
         unbinder.unbind();
     }
 
+    @Subscribe
+    public void onEvent(String event) {
+        Toast.makeText(getActivity(), event.toString(), Toast.LENGTH_SHORT).show();
+        boundMessage.add(event);
+
+    }
+
+
     @Override
-    public void getAllDevice(int errorcode, List<Device> devices) {
+    public void DidGetAllDevice(int errorcode, List<Device> devices) {
+
+    }
+
+    @Override
+    public void DidBindDevice(int errorcode) {
+
+    }
+
+    @Override
+    public void DidUnbindDevice(int errorcode) {
 
     }
 
@@ -179,5 +293,24 @@ public class DeviceFragment extends DeviceBaseFragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_device, menu);
         super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_qrcode:
+                Intent qrcodeIntent = new Intent(getActivity(), QRcodeActivity.class);
+                startActivity(qrcodeIntent);
+                break;
+            case R.id.action_test:
+                if (boundMessage.isEmpty())
+                    Toast.makeText(getActivity(), "//he", Toast.LENGTH_SHORT).show();
+                else
+                    Toast.makeText(getActivity(), "//he" + boundMessage.toString(), Toast.LENGTH_SHORT).show();
+
+                //EventBus.getDefault().post("ddddd");
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

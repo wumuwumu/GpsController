@@ -90,7 +90,7 @@ public class ShowInfoFragment extends Fragment implements
                         marker.setPosition(latlng);
                     }
                     //marker.destroy();
-                    //Toast.makeText(getActivity(),bundle.getDouble("Longitude")+"",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(),bundle.getDouble("Longitude")+"",Toast.LENGTH_SHORT).show();
 
                     break;
             }
@@ -141,13 +141,13 @@ public class ShowInfoFragment extends Fragment implements
         mUiSettings.setCompassEnabled(true);
         mUiSettings.setMyLocationButtonEnabled(true);
 
-//        MyLocationStyle myLocationStyle;
-//        myLocationStyle = new MyLocationStyle();//初始化定位蓝点样式类myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE);//连续定位、且将视角移动到地图中心点，定位点依照设备方向旋转，并且会跟随设备移动。（1秒1次定位）如果不设置myLocationType，默认也会执行此种模式。
-//        myLocationStyle.interval(10000); //设置连续定位模式下的定位间隔，只在连续定位模式下生效，单次定位模式下不会生效。单位为毫秒。
-//        mainAmap.setMyLocationStyle(myLocationStyle);//设置定位蓝点的Style
-//        //aMap.getUiSettings().setMyLocationButtonEnabled(true);//设置默认定位按钮是否显示，非必需设置。
-//        mainAmap.setMyLocationEnabled(true);// 设置为true表示启动显示定位蓝点，false表示隐藏定位蓝点并不进行定位，默认是false。
-//        mainAmap.setOnMyLocationChangeListener(this);
+        MyLocationStyle myLocationStyle;
+        myLocationStyle = new MyLocationStyle();//初始化定位蓝点样式类myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE);//连续定位、且将视角移动到地图中心点，定位点依照设备方向旋转，并且会跟随设备移动。（1秒1次定位）如果不设置myLocationType，默认也会执行此种模式。
+        myLocationStyle.interval(10000); //设置连续定位模式下的定位间隔，只在连续定位模式下生效，单次定位模式下不会生效。单位为毫秒。
+        mainAmap.setMyLocationStyle(myLocationStyle);//设置定位蓝点的Style
+        //aMap.getUiSettings().setMyLocationButtonEnabled(true);//设置默认定位按钮是否显示，非必需设置。
+        mainAmap.setMyLocationEnabled(true);// 设置为true表示启动显示定位蓝点，false表示隐藏定位蓝点并不进行定位，默认是false。
+        mainAmap.setOnMyLocationChangeListener(this);
 
 
 //            subToken = DeviceLocation.getInstance().getMqttAndroidClient()
@@ -179,7 +179,7 @@ public class ShowInfoFragment extends Fragment implements
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                      String strMessage = message.toString();
-                    //Toast.makeText(getActivity(),strMessage,Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getActivity(),"jjjjjj",Toast.LENGTH_SHORT).show();
                     CurrentLocation currentLocation = LocationToJson.getPojo(strMessage,
                             CurrentLocation.class);
 

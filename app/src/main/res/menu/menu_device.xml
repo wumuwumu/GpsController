@@ -2,8 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/action_settings"
-        android:title="sssdfdfsafd"
+    <item android:id="@+id/action_qrcode"
+        android:title="@string/str_add_device"
+        app:showAsAction="never"/>
+
+    <item android:id="@+id/action_test"
+        android:title="测试"
         app:showAsAction="never"/>
 
 </menu>
