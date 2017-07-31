@@ -9,6 +9,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.sciento.wumu.gpscontroller.DeviceSdk.ErrorCode;
+import com.sciento.wumu.gpscontroller.R;
+
 /**
  * Created by wumu on 17-7-16.
  */
@@ -29,5 +32,17 @@ public class BaseFragment extends Fragment {
 
 //        sharedPreferences = getActivity().getSharedPreferences(SPF_Name, Context.MODE_PRIVATE);
         return super.onCreateView(inflater, container, savedInstanceState);
+    }
+
+
+    protected String changeErrorCodeToString(int errorcode){
+        String errorString = getString(R.string.error_unknown);
+        switch (errorcode){
+            case ErrorCode.CODE_UNBIND_FAIL:
+                errorString = getString(R.string.error_unbind_fail);
+                break;
+
+        }
+        return errorString;
     }
 }

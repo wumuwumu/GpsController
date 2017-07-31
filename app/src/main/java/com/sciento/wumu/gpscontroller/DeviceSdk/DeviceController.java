@@ -37,4 +37,8 @@ public class DeviceController {
         sdkEventController.unBindDevice(userphone,token,deviceId);
     }
 
+    public void  getAllDeviceList(String userphone , String token){
+        sdkEventController.getAllDeviceList(userphone,token);
+    }
+
 }

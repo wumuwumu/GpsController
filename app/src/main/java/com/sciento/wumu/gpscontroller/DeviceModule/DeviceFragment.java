@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -17,14 +16,15 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.sciento.wumu.gpscontroller.ConfigModule.UserState;
 import com.sciento.wumu.gpscontroller.DeviceSdk.Device;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceController;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceListAdapter;
+import com.sciento.wumu.gpscontroller.DeviceSdk.ErrorCode;
 import com.sciento.wumu.gpscontroller.R;
 import com.sciento.wumu.gpscontroller.Utils.ProgressDialogUtils;
 import com.sciento.wumu.gpscontroller.View.SlideListView;
@@ -33,10 +33,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -79,6 +76,7 @@ public class DeviceFragment extends DeviceBaseFragment {
     private final int MSG_BOUND = 13;
     private final int MSG_UNBOUND = 14;
     private final int MSG_UPDATEUI = 15;
+    private final int MSG_SWIPE_REFRESH = 16;
 
 
     //
@@ -103,7 +101,7 @@ public class DeviceFragment extends DeviceBaseFragment {
 //                    if(!userphone.isEmpty() && !token.isEmpty()){
 //
 //                    }
-
+                    DeviceController.getInstance().getAllDeviceList(userphone,token);
 
                     break;
 
@@ -113,8 +111,21 @@ public class DeviceFragment extends DeviceBaseFragment {
                 case MSG_UNBOUND:
                     ProgressDialogUtils.getInstance().show(getActivity(),
                             getString(R.string.str_unbind_device));
-                    DeviceController.getInstance().unBindDevice(userphone,token,);
+                    DeviceController.getInstance().unBindDevice(userphone,token,msg.obj.toString());
                     break;
+                case MSG_UPDATE_DEVICE_LIST:
+                    ProgressDialogUtils.getInstance().dismiss();
+                    updateUi();
+                    break;
+                case MSG_SWIPE_REFRESH:
+                    handler.sendEmptyMessage(MSG_SWIPE_REFRESH);
+                    swipeRefreshLayout.setRefreshing(false);
+                    break;
+
+                case MSG_CONTTROLLER:
+
+                    break;
+
             }
             super.handleMessage(msg);
         }
@@ -149,16 +160,42 @@ public class DeviceFragment extends DeviceBaseFragment {
     }
 
     private void initData() {
-        userphone = sharedPreferences.getString("Uid", "");
-        token = sharedPreferences.getString("Token", "");
-
-        if (userphone.isEmpty() && token.isEmpty()) {
-            UserState.issignin = false;
-        }
+//        userphone = sharedPreferences.getString("Uid", "");
+//        token = sharedPreferences.getString("Token", "");
+//
+//        if (userphone.isEmpty() && token.isEmpty()) {
+//            UserState.issignin = false;
+//        }
 
     }
 
     private void initEvent() {
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                handler.sendEmptyMessage(MSG_SWIPE_REFRESH);
+            }
+        });
+
+        slvBundleDevice.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ProgressDialogUtils.getInstance().show(getActivity(),
+                        getString(R.string.str_start_subscribe));
+                slvBundleDevice.setEnabled(false);
+                slvBundleDevice.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        slvBundleDevice.setEnabled(true);
+                    }
+                },3000);
+
+                Device device = boundDeviceList.get(position);
+                device.setDeviceListener(getDeviceListener());
+
+               //没有完成
+            }
+        });
     }
 
     private void initView(View view) {
@@ -240,6 +277,7 @@ public class DeviceFragment extends DeviceBaseFragment {
     @Override
     public void onResume() {
         super.onResume();
+        updateUi();
         if (boundMessage.size() != 0) {
             ProgressDialogUtils.getInstance().show(getActivity(), getString(R.string.str_add_device));
             DeviceController.getInstance().bindDevice(userphone, token, boundMessage.get(0));
@@ -276,17 +314,33 @@ public class DeviceFragment extends DeviceBaseFragment {
 
     @Override
     public void DidGetAllDevice(int errorcode, List<Device> devices) {
-
+        DeviceBaseFragment.deviceslist.clear();
+        for (Device gizWifiDevice : devices) {
+            DeviceBaseFragment.deviceslist.add(gizWifiDevice);
+        }
+        handler.sendEmptyMessage(MSG_UPDATE_DEVICE_LIST);
     }
 
     @Override
     public void DidBindDevice(int errorcode) {
+        ProgressDialogUtils.getInstance().dismiss();
+        if (ErrorCode.CODE_SUCCESS != errorcode) {
+            Toast.makeText(getActivity(), changeErrorCodeToString(errorcode), Toast.LENGTH_SHORT)
+                    .show();
+        }else {
+            Toast.makeText(getActivity(),getString(R.string.str_bind_success),Toast.LENGTH_SHORT)
+                    .show();
+        }
 
     }
 
     @Override
     public void DidUnbindDevice(int errorcode) {
-
+        ProgressDialogUtils.getInstance().dismiss();
+        if (ErrorCode.CODE_SUCCESS != errorcode) {
+            Toast.makeText(getActivity(), changeErrorCodeToString(errorcode), Toast.LENGTH_SHORT)
+                    .show();
+        }
     }
 
     @Override

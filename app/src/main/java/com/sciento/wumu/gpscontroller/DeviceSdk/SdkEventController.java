@@ -39,17 +39,22 @@ public class SdkEventController {
     }
 
 
+    public void getAllDeviceList(String userphone,String token ){
+
+    }
+
+
 
     //listener
-    public void onDidGetAllDevice(int errorCode,List<Device> devices){
+    protected void onDidGetAllDevice(int errorCode,List<Device> devices){
 
     }
 
-    public void onDidBindDevice(int errorcode ){
+    protected void onDidBindDevice(int errorcode ){
 
     }
 
-    public void onDidUnbindDevice(int errorcode ){
+    protected void onDidUnbindDevice(int errorcode ){
 
     }
 

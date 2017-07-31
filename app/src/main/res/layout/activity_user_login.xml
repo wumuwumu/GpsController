@@ -99,10 +99,13 @@
             >
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:layout_marginRight="15dp"
                 android:id="@+id/tv_register"
+                android:gravity="right"
+                android:textColor="@color/colorWhite"
                 android:text="@string/str_register"
                 />
 
@@ -112,18 +115,23 @@
                 android:text="|"/>
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="15dp"
                 android:id="@+id/tv_forget_passwd"
+                android:textColor="@color/colorWhite"
                 android:text="@string/str_forget_passwd"/>
         </LinearLayout>
+
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/tv_skip"
+            android:layout_marginTop="50dp"
             android:layout_gravity="center"
+            android:textColor="@color/colorWhite"
             android:text="@string/str_skip"/>
 
 

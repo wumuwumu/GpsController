@@ -6,6 +6,7 @@ import android.view.View;
 import com.sciento.wumu.gpscontroller.DeviceSdk.Device;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceController;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceControllerListener;
+import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,5 +47,30 @@ public class DeviceBaseFragment extends BaseFragment{
     public void DidBindDevice(int errorcode){}
 
     public void DidUnbindDevice(int errorcode){}
+
+
+
+    //device listener
+    protected DeviceListener deviceListener = new DeviceListener(){
+        @Override
+        public void didDisConnected(Device device, int result) {
+            super.didDisConnected(device, result);
+        }
+
+        @Override
+        public void didOnline(Device device, int result) {
+            super.didOnline(device, result);
+        }
+
+        @Override
+        public void didSetSubscribe(int errorcode, Device device, int issubscribe) {
+            super.didSetSubscribe(errorcode, device, issubscribe);
+        }
+    };
+
+
+    protected DeviceListener getDeviceListener(){
+        return deviceListener;
+    }
 
 }

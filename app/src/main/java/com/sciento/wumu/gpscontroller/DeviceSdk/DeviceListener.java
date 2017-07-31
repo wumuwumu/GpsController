@@ -5,4 +5,10 @@ package com.sciento.wumu.gpscontroller.DeviceSdk;
  */
 
 public class DeviceListener {
+
+    public void didDisConnected(Device device , int result){}
+
+    public void didOnline(Device device , int  result){}
+
+    public void didSetSubscribe(int errorcode , Device device ,int issubscribe){}
 }

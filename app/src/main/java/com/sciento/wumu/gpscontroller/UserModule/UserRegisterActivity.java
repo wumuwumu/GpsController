@@ -15,6 +15,9 @@ import com.sciento.wumu.gpscontroller.R;
 import com.sciento.wumu.gpscontroller.Utils.VerifyCodeManager;
 import com.sciento.wumu.gpscontroller.View.CleanEditText;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -102,11 +105,16 @@ public class UserRegisterActivity extends AppCompatActivity {
                 codeManager.getVerifyCode(VerifyCodeManager.REGISTER);
                 break;
             case R.id.btn_signup:
+                Map<String, String> params = new HashMap<>();
+                params.put("account", tvMobile.getText().toString());
+                params.put("password", tvEnterPasswd.getText().toString());
 
+                //这里没有实现
                 break;
             case R.id.tv_link_login:
                 Intent linkLoginIntent = new Intent(UserRegisterActivity.this,UserLoginActivity.class);
                 startActivity(linkLoginIntent);
+                finish();
                 break;
         }
     }

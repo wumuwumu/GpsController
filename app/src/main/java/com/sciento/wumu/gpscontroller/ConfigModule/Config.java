@@ -15,7 +15,7 @@ public class Config {
     public static final String CLIENTID =  "wumu12";
 
     //http
-    public static final String HTTPSERVER =  "http://192.168.0.118:8080/signin";
+    public static final String HTTPSERVER =  "http://192.168.0.121:8080";
 
 
     //db
