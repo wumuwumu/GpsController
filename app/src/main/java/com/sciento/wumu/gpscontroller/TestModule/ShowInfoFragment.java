@@ -170,42 +170,42 @@ public class ShowInfoFragment extends Fragment implements
 //            });
 
 
-        DeviceLocation.getInstance().getMqttAndroidClient().setCallback(new MqttCallback() {
-                @Override
-                public void connectionLost(Throwable cause) {
-                    Toast.makeText(getActivity(),"eeeeeee",Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void messageArrived(String topic, MqttMessage message) throws Exception {
-                     String strMessage = message.toString();
-//                    Toast.makeText(getActivity(),"jjjjjj",Toast.LENGTH_SHORT).show();
-                    CurrentLocation currentLocation = LocationToJson.getPojo(strMessage,
-                            CurrentLocation.class);
-
-//                    LatLng latLng = new LatLng(currentLocation.getLongitude()
-//                            , currentLocation.getAltitude());
-
-
-                    Message msg = Message.obtain();
-                    msg.what = MSG_ADD_MARKER;
-                    Bundle bundle =new Bundle();
-                    bundle.putDouble("Longitude",currentLocation.getLongitude());
-                    bundle.putDouble("Latitude",currentLocation.getLatitude());
-                    msg.setData(bundle);
-                    handler.sendMessage(msg);
-
-
+//        DeviceLocation.getInstance().getMqttAndroidClient().setCallback(new MqttCallback() {
+//                @Override
+//                public void connectionLost(Throwable cause) {
+//                    Toast.makeText(getActivity(),"eeeeeee",Toast.LENGTH_SHORT).show();
+//                }
+//
+//                @Override
+//                public void messageArrived(String topic, MqttMessage message) throws Exception {
+//                     String strMessage = message.toString();
+//                    Toast.makeText(getActivity(),strMessage,Toast.LENGTH_SHORT).show();
+//                    CurrentLocation currentLocation = LocationToJson.getPojo(strMessage,
+//                            CurrentLocation.class);
+//
+////                    LatLng latLng = new LatLng(currentLocation.getLongitude()
+////                            , currentLocation.getAltitude());
+//
+//
+//                    Message msg = Message.obtain();
+//                    msg.what = MSG_ADD_MARKER;
+//                    Bundle bundle =new Bundle();
+//                    bundle.putDouble("Longitude",currentLocation.getLongitude());
+//                    bundle.putDouble("Latitude",currentLocation.getLatitude());
+//                    msg.setData(bundle);
+//                    handler.sendMessage(msg);
 
 
-                }
 
-                @Override
-                public void deliveryComplete(IMqttDeliveryToken token) {
 
-                }
-            });
+//                }
 
+//                @Override
+//                public void deliveryComplete(IMqttDeliveryToken token) {
+
+//                }
+//            });
+//
 //        try {
 //            DeviceLocation.getInstance().getMqttAndroidClient().subscribe(Config.TOPICSEND, 0);
 //        } catch (MqttException e) {

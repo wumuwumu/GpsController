@@ -14,6 +14,8 @@ public abstract class DeviceControllerListener {
 
     public void DidBindDevice(int errorcode){}
 
-    public void DidUnbindDive(int errorcode){}
+    public void DidUnbindDivce(int errorcode){}
+
+    public void DidUpdateDevice(int errorcode){}
 
 }

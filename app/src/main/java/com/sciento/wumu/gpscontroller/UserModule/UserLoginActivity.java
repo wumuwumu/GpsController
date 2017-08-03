@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -34,6 +35,7 @@ import com.sciento.wumu.gpscontroller.ConfigModule.Config;
 import com.sciento.wumu.gpscontroller.ConfigModule.StateCode;
 import com.sciento.wumu.gpscontroller.ConfigModule.UserState;
 import com.sciento.wumu.gpscontroller.R;
+import com.sciento.wumu.gpscontroller.Utils.Md5Util;
 import com.sciento.wumu.gpscontroller.Utils.NetworkUtils;
 import com.sciento.wumu.gpscontroller.Utils.ProgressDialogUtils;
 import com.sciento.wumu.gpscontroller.Utils.RegexUtils;
@@ -70,7 +72,8 @@ public class UserLoginActivity extends AppCompatActivity {
 
     private static final int MSG_REQUEST_ERROR = 500;
 
-
+    private String phone ;
+    private String password ;
 
     private UserLoginTask mAuthTask = null;
 
@@ -90,6 +93,15 @@ public class UserLoginActivity extends AppCompatActivity {
             switch (msg.what) {
                 case StateCode.USER_SUCCESS:
                     UserState.issignin = true;
+                    UserState.username = phone;
+                    SharedPreferences sharedPreferences = getSharedPreferences("gps", MODE_PRIVATE);
+                    //得到SharedPreferences.Editor对象，并保存数据到该对象中
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("phone", phone);
+                    editor.putString("passwd", Md5Util.md5(password));
+
+                    editor.commit();
+
                     Intent intent = new Intent(UserLoginActivity.this, MainActivity.class);
                     startActivity(intent);
                     finish();
@@ -186,8 +198,8 @@ public class UserLoginActivity extends AppCompatActivity {
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String phone = mPhoneView.getText().toString();
-        String password = mPasswordView.getText().toString();
+        phone = mPhoneView.getText().toString();
+        password = mPasswordView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;

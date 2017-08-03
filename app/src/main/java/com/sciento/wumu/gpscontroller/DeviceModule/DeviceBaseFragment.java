@@ -31,7 +31,7 @@ public class DeviceBaseFragment extends BaseFragment{
         }
 
         @Override
-        public void DidUnbindDive(int errorcode) {
+        public void DidUnbindDivce(int errorcode) {
             DeviceBaseFragment.this.DidUnbindDevice(errorcode);
         }
     };
@@ -51,26 +51,26 @@ public class DeviceBaseFragment extends BaseFragment{
 
 
     //device listener
-    protected DeviceListener deviceListener = new DeviceListener(){
-        @Override
-        public void didDisConnected(Device device, int result) {
-            super.didDisConnected(device, result);
-        }
-
-        @Override
-        public void didOnline(Device device, int result) {
-            super.didOnline(device, result);
-        }
-
-        @Override
-        public void didSetSubscribe(int errorcode, Device device, int issubscribe) {
-            super.didSetSubscribe(errorcode, device, issubscribe);
-        }
-    };
-
-
-    protected DeviceListener getDeviceListener(){
-        return deviceListener;
-    }
+//    protected DeviceListener deviceListener = new DeviceListener(){
+//        @Override
+//        public void didDisConnected(Device device, int result) {
+//            super.didDisConnected(device, result);
+//        }
+//
+//        @Override
+//        public void didOnline(Device device, int result) {
+//            super.didOnline(device, result);
+//        }
+//
+//        @Override
+//        public void didSetSubscribe(int errorcode, Device device, int issubscribe) {
+//            super.didSetSubscribe(errorcode, device, issubscribe);
+//        }
+//    };
+//
+//
+//    protected DeviceListener getDeviceListener(){
+//        return deviceListener;
+//    }
 
 }

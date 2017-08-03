@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.sciento.wumu.gpscontroller.R;
@@ -70,16 +71,16 @@ public class DeviceListAdapter extends BaseAdapter {
         String online = context.getString(R.string.str_online);
         String offline = context.getString(R.string.str_offine);
         String deviceName = device.getDeviceName();
-        String deviceMac = device.getMacAdress();
+        String deviceid = device.getDeviceId();
 
         if(device.getStatus() ==  true){
             holdStatus.getDeviceName().setText(deviceName);
-            holdStatus.getvDeviceId().setText(deviceMac);
-            holdStatus.getDeviceStatus().setError(online);
+            holdStatus.getvDeviceId().setText(deviceid);
+            holdStatus.getDeviceStatus().setText(online);
         }else{
             holdStatus.getDeviceName().setText(deviceName);
-            holdStatus.getvDeviceId().setText(deviceMac);
-            holdStatus.getDeviceStatus().setError(offline);
+            holdStatus.getvDeviceId().setText(deviceid);
+            holdStatus.getDeviceStatus().setText(offline);
             holdStatus.getGoControl().setVisibility(View.GONE);
         }
 
@@ -94,6 +95,7 @@ public class DeviceListAdapter extends BaseAdapter {
         });
 
         return view;
+
     }
 
 
@@ -115,13 +117,17 @@ class HoldStatus{
 
     private Button btnGoControl;
 
-    private LinearLayout llRightUnbind;
+    private RelativeLayout llRightUnbind;
 
     public TextView getvDeviceId(){
         if(null == tvDeviceId){
             tvDeviceId = (TextView)view.findViewById(R.id.tv_deivce_id);
         }
         return tvDeviceId;
+    }
+
+    public View getView(){
+        return view;
     }
 
     public TextView getDeviceName(){
@@ -133,7 +139,7 @@ class HoldStatus{
 
     public TextView getDeviceStatus(){
         if(null == tvDeviceStatus){
-            tvDeviceStatus = (TextView)view.findViewById(R.id.tv_device_staus);
+            tvDeviceStatus = (TextView)view.findViewById(R.id.tv_is_online);
         }
         return  tvDeviceStatus;
     }
@@ -145,9 +151,9 @@ class HoldStatus{
         return btnGoControl;
     }
 
-    public LinearLayout getRightUnbind(){
+    public RelativeLayout getRightUnbind(){
         if(null == llRightUnbind){
-            llRightUnbind = (LinearLayout)view.findViewById(R.id.ll_right_unbind_device);
+            llRightUnbind = (RelativeLayout)view.findViewById(R.id.ll_right_unbind_device);
         }
         return llRightUnbind;
     }

@@ -43,6 +43,7 @@ public class QRcodeActivity extends AppCompatActivity implements QRCodeView.Dele
     Button btnFindImage;
 
     private final int MSG_QRCODE_GET = 12;
+    private final int MSG_QRCODE_UPDATE = 13;
 
 
     Handler handler = new Handler(){
@@ -54,6 +55,10 @@ public class QRcodeActivity extends AppCompatActivity implements QRCodeView.Dele
                     String deviceId = bundle.getString("deviceId");
                     EventBus.getDefault().post(deviceId);
                     finish();
+                    break;
+                case MSG_QRCODE_UPDATE:
+                    QRCodeView.startSpot();
+                    Toast.makeText(QRcodeActivity.this,"error_QRcode",Toast.LENGTH_SHORT);
                     break;
             }
             super.handleMessage(msg);
@@ -73,7 +78,7 @@ public class QRcodeActivity extends AppCompatActivity implements QRCodeView.Dele
     private void init() {
 
         QRCodeView.setDelegate(this);
-
+        QRCodeView.startSpot();
     }
 
     private void getpermission() {
@@ -119,12 +124,12 @@ public class QRcodeActivity extends AppCompatActivity implements QRCodeView.Dele
     @Override
     protected void onResume() {
         super.onResume();
-        QRCodeView.startSpot();
+
     }
 
     @Override
     public void onScanQRCodeSuccess(String result) {
-       // Toast.makeText(this, result, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, result, Toast.LENGTH_SHORT).show();
 //        Toast.makeText(QRcodeActivity.this, result, Toast.LENGTH_SHORT).show();
         Message message = new Message();
         message.what= MSG_QRCODE_GET;
@@ -132,12 +137,12 @@ public class QRcodeActivity extends AppCompatActivity implements QRCodeView.Dele
         bundle.putString("deviceId",result);
         message.setData(bundle);
         handler.sendMessage(message);
-        QRCodeView.startSpot();
+//        QRCodeView.startSpot();
     }
 
     @Override
     public void onScanQRCodeOpenCameraError() {
-
+//        handler.sendEmptyMessage(MSG_QRCODE_UPDATE);
     }
 
 
@@ -172,12 +177,16 @@ public class QRcodeActivity extends AppCompatActivity implements QRCodeView.Dele
         }
     }
 
-    @OnClick(R.id.btn_find_image)
+    @OnClick({R.id.btn_find_image,
+            R.id.btn_qrcode_back})
     void OnClick(View view){
         switch (view.getId())
         {
             case R.id.btn_find_image:
                 startActivityForResult(BGAPhotoPickerActivity.newIntent(this, null, 1, null, false), REQUEST_CODE_CHOOSE_QRCODE_FROM_GALLERY);
+                break;
+            case R.id.btn_qrcode_back:
+                finish();
                 break;
         }
     }

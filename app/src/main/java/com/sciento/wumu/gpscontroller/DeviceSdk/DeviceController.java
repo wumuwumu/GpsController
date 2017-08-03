@@ -27,6 +27,7 @@ public class DeviceController {
 
     public void setDeviceControllerListener(DeviceControllerListener deviceControllerListener){
         this.deviceControllerListener = deviceControllerListener;
+        sdkEventController.setDeviceControllerListener(deviceControllerListener);
     }
 
     public void bindDevice(String userphone ,String token, String deviceId){
@@ -39,6 +40,10 @@ public class DeviceController {
 
     public void  getAllDeviceList(String userphone , String token){
         sdkEventController.getAllDeviceList(userphone,token);
+    }
+
+    public void updataDevice(String deviceId,boolean isonline){
+        sdkEventController.updataDevice(deviceId,isonline);
     }
 
 }

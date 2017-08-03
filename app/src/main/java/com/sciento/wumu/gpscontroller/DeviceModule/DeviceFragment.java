@@ -21,16 +21,21 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.sciento.wumu.gpscontroller.DeviceSdk.DeciceBean;
 import com.sciento.wumu.gpscontroller.DeviceSdk.Device;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceController;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceListAdapter;
+import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceListener;
 import com.sciento.wumu.gpscontroller.DeviceSdk.ErrorCode;
+import com.sciento.wumu.gpscontroller.MqttModule.CurrentLocation;
 import com.sciento.wumu.gpscontroller.R;
 import com.sciento.wumu.gpscontroller.Utils.ProgressDialogUtils;
+import com.sciento.wumu.gpscontroller.Utils.ToastUtils;
 import com.sciento.wumu.gpscontroller.View.SlideListView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +82,7 @@ public class DeviceFragment extends DeviceBaseFragment {
     private final int MSG_UNBOUND = 14;
     private final int MSG_UPDATEUI = 15;
     private final int MSG_SWIPE_REFRESH = 16;
+    private final int MSG_TEST = 33;
 
 
     //
@@ -118,12 +124,15 @@ public class DeviceFragment extends DeviceBaseFragment {
                     updateUi();
                     break;
                 case MSG_SWIPE_REFRESH:
-                    handler.sendEmptyMessage(MSG_SWIPE_REFRESH);
+                    handler.sendEmptyMessage(MSG_GET_DEVICE_LIST);
                     swipeRefreshLayout.setRefreshing(false);
                     break;
 
                 case MSG_CONTTROLLER:
 
+                    break;
+                case MSG_TEST:
+                    ToastUtils.makeShortText("yoyxiaoxi",getActivity());
                     break;
 
             }
@@ -131,7 +140,24 @@ public class DeviceFragment extends DeviceBaseFragment {
         }
     };
 
+    DeviceListener deviceListener = new DeviceListener(){
 
+        @Override
+        public void didSubscribeState(Device device, int result) {
+
+            ToastUtils.makeShortText(""+result,getActivity());
+        }
+
+        @Override
+        public void didInfo(String info) {
+            ToastUtils.makeShortText(info,getActivity());
+        }
+
+        @Override
+        public void didUpdateLocation(String deviceid, CurrentLocation currentLocation) {
+            ToastUtils.makeShortText(deviceid,getActivity());
+        }
+    };
 
 
     public static DeviceFragment newInstance() {
@@ -191,7 +217,7 @@ public class DeviceFragment extends DeviceBaseFragment {
                 },3000);
 
                 Device device = boundDeviceList.get(position);
-                device.setDeviceListener(getDeviceListener());
+//                device.setDeviceListener(getDeviceListener());
 
                //没有完成
             }
@@ -227,6 +253,8 @@ public class DeviceFragment extends DeviceBaseFragment {
         //swipe refresh
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swiperefreshlayout);
 
+        slvBundleDevice.initSlideMode(SlideListView.MOD_RIGHT);
+        slvOfflineDevice.initSlideMode(SlideListView.MOD_RIGHT);
     }
 
     private void updateUi() {
@@ -241,16 +269,16 @@ public class DeviceFragment extends DeviceBaseFragment {
             }
         }
 
-        if(boundDeviceList.isEmpty()){
-            slvBundleDevice.setVisibility(View.GONE);
-            llBundleDevice.setVisibility(View.VISIBLE);
-        }else {
-            deviceListAdapter = new DeviceListAdapter(getActivity(), boundDeviceList);
-            deviceListAdapter.setHandler(handler);
-            slvBundleDevice.setAdapter(deviceListAdapter);
-            slvBundleDevice.setVisibility(View.VISIBLE);
-            llBundleDevice.setVisibility(View.GONE);
-        }
+//        if(boundDeviceList.isEmpty()){
+//            slvBundleDevice.setVisibility(View.GONE);
+//            llBundleDevice.setVisibility(View.VISIBLE);
+//        }else {
+//            deviceListAdapter = new DeviceListAdapter(getActivity(), boundDeviceList);
+//            deviceListAdapter.setHandler(handler);
+//            slvBundleDevice.setAdapter(deviceListAdapter);
+//            slvBundleDevice.setVisibility(View.VISIBLE);
+//            llBundleDevice.setVisibility(View.GONE);
+//        }
 
         if(offlineDevicesList.isEmpty()){
             slvOfflineDevice.setVisibility(View.GONE);
@@ -306,17 +334,35 @@ public class DeviceFragment extends DeviceBaseFragment {
 
     @Subscribe
     public void onEvent(String event) {
-        Toast.makeText(getActivity(), event.toString(), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getActivity(), event.toString(), Toast.LENGTH_SHORT).show();
+        boundMessage.clear();
         boundMessage.add(event);
 
     }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void inInfo(DeciceBean deciceBean){
+        handler.sendEmptyMessage(MSG_TEST);
+        Toast.makeText(getActivity(),deciceBean.getDeviceId(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void getDeviceInfo(CurrentLocation currentLocation){
+//        handler.sendEmptyMessage(MSG_TEST);
+        Toast.makeText(getActivity(),currentLocation.getDeviceId()+currentLocation.getAltitude(),
+                Toast.LENGTH_SHORT).show();
+    }
+
+
 
 
     @Override
     public void DidGetAllDevice(int errorcode, List<Device> devices) {
         DeviceBaseFragment.deviceslist.clear();
-        for (Device gizWifiDevice : devices) {
-            DeviceBaseFragment.deviceslist.add(gizWifiDevice);
+        for (Device device : devices) {
+            DeviceBaseFragment.deviceslist.add(device);
+
+            device.setDeviceListener(deviceListener);
+            device.setSubscribe(true);
         }
         handler.sendEmptyMessage(MSG_UPDATE_DEVICE_LIST);
     }
@@ -357,12 +403,12 @@ public class DeviceFragment extends DeviceBaseFragment {
                 startActivity(qrcodeIntent);
                 break;
             case R.id.action_test:
-                if (boundMessage.isEmpty())
-                    Toast.makeText(getActivity(), "//he", Toast.LENGTH_SHORT).show();
-                else
-                    Toast.makeText(getActivity(), "//he" + boundMessage.toString(), Toast.LENGTH_SHORT).show();
+//                if (boundMessage.isEmpty())
+//                    Toast.makeText(getActivity(), "//he", Toast.LENGTH_SHORT).show();
+//                else
+//                    Toast.makeText(getActivity(), "//he" + boundMessage.toString(), Toast.LENGTH_SHORT).show();
 
-                //EventBus.getDefault().post("ddddd");
+                EventBus.getDefault().post("wumu12");
                 break;
         }
         return super.onOptionsItemSelected(item);

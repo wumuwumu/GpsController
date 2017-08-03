@@ -130,9 +130,7 @@ public class HomeFragment extends Fragment implements
 
     @Override
     public void onMyLocationChange(Location location) {
-
-
-//        DeviceLocation.getInstance().sendLocation(Config.TOPICSEND,LocationToJson.getJson(location));
+        DeviceLocation.getInstance().sendLocation(Config.TOPICSEND,LocationToJson.getJson(location));
     }
 
 

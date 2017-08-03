@@ -1,7 +1,9 @@
 package com.sciento.wumu.gpscontroller.MqttModule;
 
 import android.app.Application;
+import android.location.Location;
 import android.os.AsyncTask;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -10,9 +12,12 @@ import com.sciento.wumu.gpscontroller.ConfigModule.Config;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.UnsupportedEncodingException;
 
@@ -56,11 +61,11 @@ public class DeviceLocation {
                     isConnected = true;
                     Log.d(TAG, "onSuccess");
                     Toast.makeText(AppContext.getContext(),"suc",Toast.LENGTH_SHORT).show();
-                    try {
-                        DeviceLocation.getInstance().getMqttAndroidClient().subscribe(Config.TOPICSEND, 0);
-                    } catch (MqttException e) {
-                        e.printStackTrace();
-                    }
+//                    try {
+//                        DeviceLocation.getInstance().getMqttAndroidClient().subscribe(Config.TOPICSEND, 0);
+//                    } catch (MqttException e) {
+//                        e.printStackTrace();
+//                    }
 
                 }
 
@@ -74,7 +79,34 @@ public class DeviceLocation {
                 }
             });
 
+        mqttAndroidClient.setCallback(new MqttCallback() {
+            @Override
+            public void connectionLost(Throwable cause) {
 
+            }
+
+            @Override
+            public void messageArrived(String topic, MqttMessage message) throws Exception {
+                if(topic.matches("^topic://.*/[a-z]*$")){
+                    String[] topicArray = topic.split("/");
+                    if(topicArray.length ==4){
+                        if(topicArray[3].equals("up")){
+                           CurrentLocation currentLocation = LocationToJson
+                                   .getPojo(message.toString(),CurrentLocation.class);
+                            EventBus.getDefault().post(currentLocation);
+                        }else if(topicArray[3].equals("state")) {
+
+                        }
+                    }
+
+                }
+            }
+
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken token) {
+
+            }
+        });
 
     }
 

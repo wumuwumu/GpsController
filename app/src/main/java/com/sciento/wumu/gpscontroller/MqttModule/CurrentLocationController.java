@@ -13,22 +13,24 @@ import java.util.Currency;
 public class CurrentLocationController  {
     private CurrentLocation currentLocation = new CurrentLocation();
 
-    public CurrentLocationController(Location location){
+    public CurrentLocationController(Location location,String deviceid){
         currentLocation.setLatitude(location.getLatitude());
         currentLocation.setLongitude(location.getLongitude());
         currentLocation.setAccuracy(location.getAccuracy());
         currentLocation.setAltitude(location.getAltitude());
         currentLocation.setSpeed(location.getSpeed());
         currentLocation.setBearing(location.getBearing());
+        currentLocation.setDeviceId(deviceid);
     }
 
-    public CurrentLocationController(AMapLocation location){
+    public CurrentLocationController(AMapLocation location,String deviceid){
         currentLocation.setLatitude(location.getLatitude());
         currentLocation.setLongitude(location.getLongitude());
         currentLocation.setAccuracy(location.getAccuracy());
         currentLocation.setAltitude(location.getAltitude());
         currentLocation.setSpeed(location.getSpeed());
         currentLocation.setBearing(location.getBearing());
+        currentLocation.setDeviceId(deviceid);
     }
 
     CurrentLocation getCurrentLocation(){

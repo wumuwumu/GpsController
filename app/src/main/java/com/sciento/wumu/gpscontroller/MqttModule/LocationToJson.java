@@ -24,7 +24,7 @@ public class LocationToJson {
 
 
     public static String getJson(Location location){
-        CurrentLocationController currentLocation = new CurrentLocationController(location);
+        CurrentLocationController currentLocation = new CurrentLocationController(location,"wumu");
 
         final String json = gson.toJson(currentLocation.getCurrentLocation());
 
@@ -33,7 +33,7 @@ public class LocationToJson {
     }
 
     public static String getJson(AMapLocation location){
-        CurrentLocationController currentLocation = new CurrentLocationController(location);
+        CurrentLocationController currentLocation = new CurrentLocationController(location,"wumu");
 
 
         final String json = gson.toJson(currentLocation);

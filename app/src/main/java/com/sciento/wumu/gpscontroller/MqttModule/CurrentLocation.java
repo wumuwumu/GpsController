@@ -6,12 +6,17 @@ package com.sciento.wumu.gpscontroller.MqttModule;
 
 public class CurrentLocation {
 
+
     private double latitude; //纬度
     private double longitude; //经度
+
+
     private  float accuracy;  //精度
     private double altitude; //海拔
     private  float speed; //速度
     private  float bearing; //方向角
+
+    private String deviceId;//设备id
 
     public double getLatitude() {
         return latitude;
@@ -61,6 +66,15 @@ public class CurrentLocation {
         this.bearing = bearing;
     }
 
+
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
 
 
 

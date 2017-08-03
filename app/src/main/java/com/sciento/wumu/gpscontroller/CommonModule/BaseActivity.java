@@ -7,7 +7,9 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.sciento.wumu.gpscontroller.DeviceModule.DeviceFragment;
 import com.sciento.wumu.gpscontroller.MqttModule.DeviceLocation;
+import com.sciento.wumu.gpscontroller.R;
 import com.sciento.wumu.gpscontroller.Utils.NetworkUtils;
+import com.sciento.wumu.gpscontroller.Utils.ToastUtils;
 import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.Rationale;
 import com.yanzhenjie.permission.RationaleListener;
@@ -55,6 +57,8 @@ class BaseActivity extends AppCompatActivity {
         if(NetworkUtils.isConnected(BaseActivity.this))
         {
             DeviceLocation.getInstance().connect();
+        }else{
+            ToastUtils.makeShortText(getString(R.string.error_network_dis),BaseActivity.this);
         }
     }
 

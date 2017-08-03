@@ -45,6 +45,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="ddddd"
+            android:layout_gravity="center"
             android:id="@+id/tv_is_online"/>
 
 
@@ -54,7 +55,7 @@
             android:id="@+id/btn_go_control"
             android:background="@drawable/ic_go_right_black_24dp"/>
         
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="90dp"
             android:layout_height="match_parent"
             android:id="@+id/ll_right_unbind_device"
@@ -66,7 +67,7 @@
                 android:layout_gravity="center"
                 android:textSize="20sp"
                 />
-        </LinearLayout>
+        </RelativeLayout>
 
 
     </LinearLayout>
