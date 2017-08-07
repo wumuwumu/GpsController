@@ -1,12 +1,8 @@
 package com.sciento.wumu.gpscontroller.DeviceModule;
 
-import android.support.v4.app.Fragment;
-import android.view.View;
-
-import com.sciento.wumu.gpscontroller.DeviceSdk.Device;
+import com.sciento.wumu.gpscontroller.DeviceSdk.DevicePlus;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceController;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceControllerListener;
-import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +13,11 @@ import java.util.List;
 
 public class DeviceBaseFragment extends BaseFragment{
 
-    protected static List<Device> deviceslist = new ArrayList<Device>();
+    public static List<DevicePlus> deviceslist = new ArrayList<DevicePlus>();
 
     DeviceControllerListener deviceControllerListener = new DeviceControllerListener() {
         @Override
-        public void DidGetAllDevice(int errorCode, List<Device> devices) {
+        public void DidGetAllDevice(int errorCode, List<DevicePlus> devices) {
             DeviceBaseFragment.this.DidGetAllDevice( errorCode,  devices);
         }
 
@@ -31,8 +27,13 @@ public class DeviceBaseFragment extends BaseFragment{
         }
 
         @Override
-        public void DidUnbindDivce(int errorcode) {
+        public void DidUnbindDevice(int errorcode) {
             DeviceBaseFragment.this.DidUnbindDevice(errorcode);
+        }
+
+        @Override
+        public void DidUpdateDevice(int errorcode) {
+            DidUpdateDevice(errorcode);
         }
     };
 
@@ -42,28 +43,30 @@ public class DeviceBaseFragment extends BaseFragment{
         DeviceController.getInstance().setDeviceControllerListener(deviceControllerListener);
     }
 
-    public void DidGetAllDevice(int errorcode, List<Device> devices){}
+    public void DidGetAllDevice(int errorcode, List<DevicePlus> devices){}
 
     public void DidBindDevice(int errorcode){}
 
     public void DidUnbindDevice(int errorcode){}
+
+    public void DidUpdataDevice(int errorcode){}
 
 
 
     //device listener
 //    protected DeviceListener deviceListener = new DeviceListener(){
 //        @Override
-//        public void didDisConnected(Device device, int result) {
+//        public void didDisConnected(DevicePlus device, int result) {
 //            super.didDisConnected(device, result);
 //        }
 //
 //        @Override
-//        public void didOnline(Device device, int result) {
+//        public void didOnline(DevicePlus device, int result) {
 //            super.didOnline(device, result);
 //        }
 //
 //        @Override
-//        public void didSetSubscribe(int errorcode, Device device, int issubscribe) {
+//        public void didSetSubscribe(int errorcode, DevicePlus device, int issubscribe) {
 //            super.didSetSubscribe(errorcode, device, issubscribe);
 //        }
 //    };

@@ -6,7 +6,9 @@ package com.sciento.wumu.gpscontroller.ConfigModule;
 
 public class UserState {
     public static boolean issignin = false;
-    public static String username ;
+    public static String username = "15626475082";
     public static String userpasswd ;
+    public static String referer;
+    public static String uId;
 
 }

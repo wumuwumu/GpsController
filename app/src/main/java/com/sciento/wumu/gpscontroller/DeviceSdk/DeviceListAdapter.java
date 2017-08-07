@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -25,15 +24,16 @@ public class DeviceListAdapter extends BaseAdapter {
 
     Handler handler = new Handler();
     protected static final int MSG_UNBOUND = 14;
+    private final int MSG_CONTTROLLER = 12;
 
     public void setHandler(Handler handler) {
         this.handler = handler;
     }
 
     Context context;
-    List<Device> deviceList;
+    List<DevicePlus> deviceList;
 
-    public DeviceListAdapter(Context context, List<Device> deviceList) {
+    public DeviceListAdapter(Context context, List<DevicePlus> deviceList) {
         super();
         this.context = context;
         this.deviceList = deviceList;
@@ -66,14 +66,14 @@ public class DeviceListAdapter extends BaseAdapter {
             holdStatus = (HoldStatus) view.getTag();
         }
 
-        final Device device = deviceList.get(position);
+        final DevicePlus device = deviceList.get(position);
 
         String online = context.getString(R.string.str_online);
         String offline = context.getString(R.string.str_offine);
-        String deviceName = device.getDeviceName();
-        String deviceid = device.getDeviceId();
+        String deviceName = device.getJsonDevice().getName();
+        String deviceid = device.getJsonDevice().getId();
 
-        if(device.getStatus() ==  true){
+        if(device.getJsonDevice().isOnline() ==  true){
             holdStatus.getDeviceName().setText(deviceName);
             holdStatus.getvDeviceId().setText(deviceid);
             holdStatus.getDeviceStatus().setText(online);
@@ -89,7 +89,17 @@ public class DeviceListAdapter extends BaseAdapter {
             public void onClick(View v) {
                 Message message = new Message();
                 message.what = MSG_UNBOUND;
-                message.obj = device.getDeviceId().toString();
+                message.obj = device.getJsonDevice().getId().toString();
+                handler.sendMessage(message);
+            }
+        });
+
+        holdStatus.getGoControl().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Message message = new Message();
+                message.what = MSG_CONTTROLLER;
+                message.obj = device.getJsonDevice().getId().toString();
                 handler.sendMessage(message);
             }
         });

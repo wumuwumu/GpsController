@@ -1,5 +1,7 @@
 package com.sciento.wumu.gpscontroller.DeviceSdk;
 
+import com.sciento.wumu.gpscontroller.Model.SendFenceBean;
+
 /**
  * Created by wumu on 17-7-17.
  */
@@ -44,6 +46,14 @@ public class DeviceController {
 
     public void updataDevice(String deviceId,boolean isonline){
         sdkEventController.updataDevice(deviceId,isonline);
+    }
+
+    public void getfencestate(String deviceid){
+        sdkEventController.getfencestate(deviceid);
+    }
+
+    public void sendFenceInfo(SendFenceBean sendFence, FenceListener fenceListener ){
+        sdkEventController.sendFenceInfo(sendFence, fenceListener);
     }
 
 }

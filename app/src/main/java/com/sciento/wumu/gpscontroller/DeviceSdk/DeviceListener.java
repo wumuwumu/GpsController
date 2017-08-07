@@ -8,11 +8,11 @@ import com.sciento.wumu.gpscontroller.MqttModule.CurrentLocation;
 
 public abstract class DeviceListener {
 
-    public void didSubscribeState(Device device , int result){}
+    public void didSubscribeState(DevicePlus device , int result){}
 
-    public void didSubscribe(Device device , int  result){}
+    public void didSubscribe(DevicePlus device , int  result){}
 
-    public void didSetSubscribe(int errorcode , Device device ,int issubscribe){}
+    public void didSetSubscribe(int errorcode , DevicePlus device , int issubscribe){}
 
     public void didInfo(String info){};
 

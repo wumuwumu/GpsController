@@ -2,8 +2,11 @@ package com.sciento.wumu.gpscontroller.CommonModule;
 
 import android.Manifest;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.webkit.ServiceWorkerClient;
 
 import com.sciento.wumu.gpscontroller.DeviceModule.DeviceFragment;
 import com.sciento.wumu.gpscontroller.MqttModule.DeviceLocation;
@@ -21,11 +24,34 @@ import com.yanzhenjie.permission.RationaleListener;
 class BaseActivity extends AppCompatActivity {
 
     private static final  int REQUEST_CODE_SETTING = 100;
+    private final int MSG_CONNECT  =37;
+    Handler baseHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what){
+                case MSG_CONNECT:
+                    if(NetworkUtils.isConnected(BaseActivity.this))
+                    {
+                        DeviceLocation.getInstance().connect();
+                    }else{
+                        ToastUtils.makeShortText(getString(R.string.error_network_dis),BaseActivity.this);
+                    }
+                    break;
+            }
+            super.handleMessage(msg);
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         init();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        baseHandler.sendEmptyMessage(MSG_CONNECT);
     }
 
     private void init() {
@@ -54,12 +80,8 @@ class BaseActivity extends AppCompatActivity {
             }
         }).start();
 
-        if(NetworkUtils.isConnected(BaseActivity.this))
-        {
-            DeviceLocation.getInstance().connect();
-        }else{
-            ToastUtils.makeShortText(getString(R.string.error_network_dis),BaseActivity.this);
-        }
+
+
     }
 
 

@@ -21,13 +21,27 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.sciento.wumu.gpscontroller.CommonModule.AppContext;
+import com.sciento.wumu.gpscontroller.ConfigModule.Config;
+import com.sciento.wumu.gpscontroller.ConfigModule.UserState;
+import com.sciento.wumu.gpscontroller.ControllerModule.ControllerActivity;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeciceBean;
-import com.sciento.wumu.gpscontroller.DeviceSdk.Device;
+import com.sciento.wumu.gpscontroller.DeviceSdk.DevicePlus;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceController;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceListAdapter;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceListener;
 import com.sciento.wumu.gpscontroller.DeviceSdk.ErrorCode;
+import com.sciento.wumu.gpscontroller.Event.DeviceConnected;
+import com.sciento.wumu.gpscontroller.Event.DeviceDisconnect;
+import com.sciento.wumu.gpscontroller.Model.JsonDevice;
 import com.sciento.wumu.gpscontroller.MqttModule.CurrentLocation;
+import com.sciento.wumu.gpscontroller.MqttModule.LocationToJson;
 import com.sciento.wumu.gpscontroller.R;
 import com.sciento.wumu.gpscontroller.Utils.ProgressDialogUtils;
 import com.sciento.wumu.gpscontroller.Utils.ToastUtils;
@@ -36,16 +50,22 @@ import com.sciento.wumu.gpscontroller.View.SlideListView;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
 /**
- * this is about Device <br>
+ * this is about DevicePlus <br>
  * A simple {@link Fragment} subclass.
  * Use the {@link DeviceFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -88,8 +108,8 @@ public class DeviceFragment extends DeviceBaseFragment {
     //
     public static List<String> boundMessage = new ArrayList<>();
 
-    List<Device> boundDeviceList;
-    List<Device> offlineDevicesList;
+    List<DevicePlus> boundDeviceList;
+    List<DevicePlus> offlineDevicesList;
 
 
     private DeviceListAdapter deviceListAdapter;
@@ -129,7 +149,12 @@ public class DeviceFragment extends DeviceBaseFragment {
                     break;
 
                 case MSG_CONTTROLLER:
-
+//                    ToastUtils.makeShortText("jjjjjjj",getActivity());
+                    Bundle bundle =new Bundle();
+                    bundle.putString("deviceid",msg.obj.toString());
+                    Intent controllerIntent = new Intent(getActivity(), ControllerActivity.class);
+                    controllerIntent.putExtras(bundle);
+                    startActivity(controllerIntent);
                     break;
                 case MSG_TEST:
                     ToastUtils.makeShortText("yoyxiaoxi",getActivity());
@@ -143,7 +168,7 @@ public class DeviceFragment extends DeviceBaseFragment {
     DeviceListener deviceListener = new DeviceListener(){
 
         @Override
-        public void didSubscribeState(Device device, int result) {
+        public void didSubscribeState(DevicePlus device, int result) {
 
             ToastUtils.makeShortText(""+result,getActivity());
         }
@@ -206,17 +231,17 @@ public class DeviceFragment extends DeviceBaseFragment {
         slvBundleDevice.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ProgressDialogUtils.getInstance().show(getActivity(),
-                        getString(R.string.str_start_subscribe));
-                slvBundleDevice.setEnabled(false);
-                slvBundleDevice.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        slvBundleDevice.setEnabled(true);
-                    }
-                },3000);
+//                ProgressDialogUtils.getInstance().show(getActivity(),
+//                        getString(R.string.str_start_subscribe));
+//                slvBundleDevice.setEnabled(false);
+//                slvBundleDevice.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        slvBundleDevice.setEnabled(true);
+//                    }
+//                },3000);
 
-                Device device = boundDeviceList.get(position);
+                ToastUtils.makeShortText("dddsdfasfsf",getActivity());
 //                device.setDeviceListener(getDeviceListener());
 
                //没有完成
@@ -261,24 +286,24 @@ public class DeviceFragment extends DeviceBaseFragment {
         boundDeviceList = new ArrayList<>();
         offlineDevicesList = new ArrayList<>();
 
-        for(Device device : DeviceBaseFragment.deviceslist){
-            if(device.getStatus() == true){
+        for(DevicePlus device : DeviceBaseFragment.deviceslist){
+            if(device.getJsonDevice().isOnline() == true){
                 boundDeviceList.add(device);
             }else {
                 offlineDevicesList.add(device);
             }
         }
 
-//        if(boundDeviceList.isEmpty()){
-//            slvBundleDevice.setVisibility(View.GONE);
-//            llBundleDevice.setVisibility(View.VISIBLE);
-//        }else {
-//            deviceListAdapter = new DeviceListAdapter(getActivity(), boundDeviceList);
-//            deviceListAdapter.setHandler(handler);
-//            slvBundleDevice.setAdapter(deviceListAdapter);
-//            slvBundleDevice.setVisibility(View.VISIBLE);
-//            llBundleDevice.setVisibility(View.GONE);
-//        }
+        if(boundDeviceList.isEmpty()){
+            slvBundleDevice.setVisibility(View.GONE);
+            llBundleDevice.setVisibility(View.VISIBLE);
+        }else {
+            deviceListAdapter = new DeviceListAdapter(getActivity(), boundDeviceList);
+            deviceListAdapter.setHandler(handler);
+            slvBundleDevice.setAdapter(deviceListAdapter);
+            slvBundleDevice.setVisibility(View.VISIBLE);
+            llBundleDevice.setVisibility(View.GONE);
+        }
 
         if(offlineDevicesList.isEmpty()){
             slvOfflineDevice.setVisibility(View.GONE);
@@ -308,7 +333,7 @@ public class DeviceFragment extends DeviceBaseFragment {
         updateUi();
         if (boundMessage.size() != 0) {
             ProgressDialogUtils.getInstance().show(getActivity(), getString(R.string.str_add_device));
-            DeviceController.getInstance().bindDevice(userphone, token, boundMessage.get(0));
+            DeviceController.getInstance().bindDevice(UserState.username, token, boundMessage.get(0));
 
         }
     }
@@ -352,29 +377,60 @@ public class DeviceFragment extends DeviceBaseFragment {
                 Toast.LENGTH_SHORT).show();
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void getDeviceConnected(DeviceConnected deviceConnected){
+        String deviceId = deviceConnected.getDeviceId();
+        ListIterator<DevicePlus> deviceListIterator = DeviceBaseFragment.deviceslist.listIterator();
+        while (deviceListIterator.hasNext()){
+            if(deviceListIterator.next().getJsonDevice().getId().equals(deviceId)){
+                deviceListIterator.next().getJsonDevice().setOnline(true);
+                handler.sendEmptyMessage(MSG_UPDATEUI);
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void getDeviceDisconnect(DeviceDisconnect deviceDisconnect){
+        String deviceId = deviceDisconnect.getDeviceId();
+        ListIterator<DevicePlus> deviceListIterator = DeviceBaseFragment.deviceslist.listIterator();
+        while (deviceListIterator.hasNext()){
+            if(deviceListIterator.next().getJsonDevice().getId().equals(deviceId)){
+                deviceListIterator.next().getJsonDevice().setOnline(false);
+                handler.sendEmptyMessage(MSG_UPDATEUI);
+            }
+        }
+    }
+
 
 
 
     @Override
-    public void DidGetAllDevice(int errorcode, List<Device> devices) {
-        DeviceBaseFragment.deviceslist.clear();
-        for (Device device : devices) {
-            DeviceBaseFragment.deviceslist.add(device);
-
-            device.setDeviceListener(deviceListener);
-            device.setSubscribe(true);
+    public void DidGetAllDevice(int errorcode, List<DevicePlus> devices) {
+        if(errorcode == ErrorCode.CODE_SUCCESS){
+            DeviceBaseFragment.deviceslist.clear();
+            for (DevicePlus device : devices) {
+                DeviceBaseFragment.deviceslist.add(device);
+                device.setDeviceListener(deviceListener);
+                device.setSubscribe(true);
+            }
+            handler.sendEmptyMessage(MSG_UPDATE_DEVICE_LIST);
+            Toast.makeText(getActivity(), changeErrorCodeToString(errorcode), Toast.LENGTH_SHORT)
+                    .show();
+        }else {
+            Toast.makeText(getActivity(), changeErrorCodeToString(errorcode), Toast.LENGTH_SHORT)
+                    .show();
         }
-        handler.sendEmptyMessage(MSG_UPDATE_DEVICE_LIST);
+
     }
 
     @Override
     public void DidBindDevice(int errorcode) {
-        ProgressDialogUtils.getInstance().dismiss();
+//        ProgressDialogUtils.getInstance().dismiss();
         if (ErrorCode.CODE_SUCCESS != errorcode) {
             Toast.makeText(getActivity(), changeErrorCodeToString(errorcode), Toast.LENGTH_SHORT)
                     .show();
         }else {
-            Toast.makeText(getActivity(),getString(R.string.str_bind_success),Toast.LENGTH_SHORT)
+            Toast.makeText(getActivity(), changeErrorCodeToString(errorcode), Toast.LENGTH_SHORT)
                     .show();
         }
 
@@ -382,11 +438,16 @@ public class DeviceFragment extends DeviceBaseFragment {
 
     @Override
     public void DidUnbindDevice(int errorcode) {
-        ProgressDialogUtils.getInstance().dismiss();
+//        ProgressDialogUtils.getInstance().dismiss();
         if (ErrorCode.CODE_SUCCESS != errorcode) {
             Toast.makeText(getActivity(), changeErrorCodeToString(errorcode), Toast.LENGTH_SHORT)
                     .show();
         }
+    }
+
+    @Override
+    public void DidUpdataDevice(int errorcode) {
+
     }
 
     @Override
@@ -403,12 +464,56 @@ public class DeviceFragment extends DeviceBaseFragment {
                 startActivity(qrcodeIntent);
                 break;
             case R.id.action_test:
-//                if (boundMessage.isEmpty())
-//                    Toast.makeText(getActivity(), "//he", Toast.LENGTH_SHORT).show();
-//                else
-//                    Toast.makeText(getActivity(), "//he" + boundMessage.toString(), Toast.LENGTH_SHORT).show();
+                String url =Config.HTTPSERVER+"/api/bind";
 
-                EventBus.getDefault().post("wumu12");
+                Map<String, String>map = new HashMap<>();
+                map.put("userName",UserState.username);
+                map.put("deviceId","123435678888888888888888886");
+                JSONObject jsonObject = new JSONObject(map);
+                // 参数：[请求方式][请求链接][请求参数][成功回调][失败回调]
+                JsonObjectRequest mStringRequest = new JsonObjectRequest(
+                        Request.Method.POST,
+                        url,
+                        jsonObject,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                int status  =-2;
+                                String str ="1";
+                                try {
+                                    status = response.getInt("status");
+                                    str = response.getString("msg");
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                if(status ==1){
+                                    ToastUtils.makeShortText("ss",getActivity());
+                                }
+                                ToastUtils.makeShortText(str,getActivity());
+
+
+
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                               ToastUtils.makeShortText("err",getActivity());
+                            }
+                        }
+                ){
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        Map<String,String> params = new HashMap<String, String>();
+                        params.put("Cookie" , UserState.referer );
+                        return params;
+                    }
+                };
+
+                mStringRequest.setRetryPolicy(new DefaultRetryPolicy(
+                        20 * 1000, 3, 1.0f));
+                mStringRequest.setTag("bind");// 设置标签
+                AppContext.getRequestQueue().add(mStringRequest);// 将请求添加进队列
                 break;
         }
         return super.onOptionsItemSelected(item);

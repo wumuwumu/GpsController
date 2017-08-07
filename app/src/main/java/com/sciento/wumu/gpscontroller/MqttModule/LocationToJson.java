@@ -5,6 +5,11 @@ import android.location.Location;
 import com.amap.api.location.AMapLocation;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.sciento.wumu.gpscontroller.Model.DeviceState;
+import com.sciento.wumu.gpscontroller.Model.SendFenceBean;
+
+import java.util.List;
 
 /**
  * Created by wumu on 17-7-8.
@@ -48,6 +53,23 @@ public class LocationToJson {
                  return result;
              }
 
+
+    public static String getStateJson(DeviceState deviceState){
+        final String json = gson.toJson(deviceState);
+
+        return json;
+    }
+
+    public static String getFenceJson(SendFenceBean sendFence){
+        final String json = gson.toJson(sendFence);
+
+        return json;
+    }
+
+    public static <T> List<T> jsonToList(String json, Class<T> typeOfT) {
+        List<T> list = gson.fromJson(json, new TypeToken<List<T>>(){}.getType());
+        return list;
+    }
 
 
 

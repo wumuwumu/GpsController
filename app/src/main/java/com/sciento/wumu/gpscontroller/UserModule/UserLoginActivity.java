@@ -1,18 +1,17 @@
 package com.sciento.wumu.gpscontroller.UserModule;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.ContactsContract;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -22,28 +21,21 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.sciento.wumu.gpscontroller.CommonModule.AppContext;
 import com.sciento.wumu.gpscontroller.CommonModule.MainActivity;
 import com.sciento.wumu.gpscontroller.ConfigModule.Config;
 import com.sciento.wumu.gpscontroller.ConfigModule.StateCode;
 import com.sciento.wumu.gpscontroller.ConfigModule.UserState;
 import com.sciento.wumu.gpscontroller.R;
 import com.sciento.wumu.gpscontroller.Utils.Md5Util;
-import com.sciento.wumu.gpscontroller.Utils.NetworkUtils;
 import com.sciento.wumu.gpscontroller.Utils.ProgressDialogUtils;
 import com.sciento.wumu.gpscontroller.Utils.RegexUtils;
 import com.sciento.wumu.gpscontroller.Utils.ToastUtils;
 import com.sciento.wumu.gpscontroller.View.CleanEditText;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.yanzhenjie.permission.AndPermission;
+import com.yanzhenjie.permission.Rationale;
+import com.yanzhenjie.permission.RationaleListener;
 
 import java.util.HashMap;
 import java.util.List;
@@ -52,8 +44,6 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-
-import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via email/password.
@@ -68,7 +58,7 @@ public class UserLoginActivity extends AppCompatActivity {
     TextView tvSkip;
 
 
-    private static final int REQUEST_READ_CONTACTS = 0;
+    private static final int REQUEST_CODE_SETTING = 12;
 
     private static final int MSG_REQUEST_ERROR = 500;
 
@@ -94,6 +84,7 @@ public class UserLoginActivity extends AppCompatActivity {
                 case StateCode.USER_SUCCESS:
                     UserState.issignin = true;
                     UserState.username = phone;
+                    UserState.userpasswd =  password;
                     SharedPreferences sharedPreferences = getSharedPreferences("gps", MODE_PRIVATE);
                     //得到SharedPreferences.Editor对象，并保存数据到该对象中
                     SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -126,6 +117,17 @@ public class UserLoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user_login);
         ButterKnife.bind(this);
         // Set up the login form.
+        AndPermission.with(this)
+                .requestCode(REQUEST_CODE_SETTING)
+                .permission(
+                        Manifest.permission.INTERNET
+                ).rationale(new RationaleListener() {
+
+            @Override
+            public void showRequestPermissionRationale(int arg0, Rationale arg1) {
+                AndPermission.rationaleDialog(UserLoginActivity.this, arg1).show();
+            }
+        }).start();
         init();
 
     }
@@ -156,30 +158,6 @@ public class UserLoginActivity extends AppCompatActivity {
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
-    }
-
-
-    //获取权限
-    private boolean mayRequestContacts() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return true;
-        }
-        if (checkSelfPermission(READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
-        if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-            Snackbar.make(mPhoneView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
-                    .setAction(android.R.string.ok, new OnClickListener() {
-                        @Override
-                        @TargetApi(Build.VERSION_CODES.M)
-                        public void onClick(View v) {
-                            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-                        }
-                    });
-        } else {
-            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-        }
-        return false;
     }
 
 
@@ -326,6 +304,7 @@ public class UserLoginActivity extends AppCompatActivity {
             case R.id.tv_skip:
                 Intent skipIntent = new Intent(UserLoginActivity.this,MainActivity.class);
                 startActivity(skipIntent);
+                finish();
                 break;
         }
     }

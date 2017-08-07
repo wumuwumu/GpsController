@@ -9,6 +9,9 @@ import android.widget.Toast;
 
 import com.sciento.wumu.gpscontroller.CommonModule.AppContext;
 import com.sciento.wumu.gpscontroller.ConfigModule.Config;
+import com.sciento.wumu.gpscontroller.Event.Alarm;
+import com.sciento.wumu.gpscontroller.Event.DeviceConnected;
+import com.sciento.wumu.gpscontroller.Event.DeviceDisconnect;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -87,18 +90,38 @@ public class DeviceLocation {
 
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
-                if(topic.matches("^topic://.*/[a-z]*$")){
-                    String[] topicArray = topic.split("/");
-                    if(topicArray.length ==4){
-                        if(topicArray[3].equals("up")){
-                           CurrentLocation currentLocation = LocationToJson
-                                   .getPojo(message.toString(),CurrentLocation.class);
-                            EventBus.getDefault().post(currentLocation);
-                        }else if(topicArray[3].equals("state")) {
+                if(topic.matches("^topic://.*/.*/.*$")) {
+                    String[] topicUpArray = topic.split("/");
+                    if (topicUpArray.length == 5) {
+                        if (topicUpArray[3].equals("up")) {
+                            if (topicUpArray[4].equals("location")) {
+                                CurrentLocation currentLocation = LocationToJson
+                                        .getPojo(message.toString(), CurrentLocation.class);
+                                EventBus.getDefault().post(currentLocation);
+                            } else if (topicUpArray[4].equals("alarm")) {
+                                Alarm alarm = LocationToJson.getPojo(message.toString(), Alarm.class);
+                                EventBus.getDefault().post(alarm);
+                            }
 
                         }
                     }
 
+                }else if(topic.matches(".*/connected")) {
+                    String[] topicConArray = topic.split("/");
+                    if(topicConArray.length == 6){
+                        DeviceConnected deviceConnected = LocationToJson
+                                .getPojo(message.toString(), DeviceConnected.class);
+                        deviceConnected.setDeviceId(topicConArray[4]);
+                        EventBus.getDefault().post(deviceConnected);
+                    }
+                }else  if(topic.matches(".*/disconnected")){
+                    String[] topicConArray = topic.split("/");
+                    if(topicConArray.length == 6){
+                        DeviceDisconnect deviceConnected = LocationToJson
+                                .getPojo(message.toString(), DeviceDisconnect.class);
+                        deviceConnected.setDeviceId(topicConArray[4]);
+                        EventBus.getDefault().post(deviceConnected);
+                    }
                 }
             }
 

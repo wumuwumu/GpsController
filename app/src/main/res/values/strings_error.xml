@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="success">成功</string>
     <string name="error_unknown">未知问题</string>
     <string name="error_unbind_fail">解除绑定失败</string>
     <string name="error_login_request">登录失败</string>
+    <string name="error_get_all_fail">获取所有设备失败</string>
+    <string name="error_bind_fail">绑定设备失败</string>
+    <string name="error_network_fail">网络错误</string>
+
 </resources>

@@ -67,7 +67,9 @@
             android:name=".UserModule.UserRegisterActivity"
             android:theme="@style/AppTheme" />
         <activity android:name=".UserModule.UserForgetActivity" />
-        <activity android:name=".ControllerModule.ControllerActivity"></activity>
+        <activity android:name=".ControllerModule.ControllerActivity" />
+        <activity android:name=".ControllerModule.SwitchActivity" />
+        <activity android:name=".ControllerModule.FenceActivity"></activity>
     </application>
 
 </manifest>

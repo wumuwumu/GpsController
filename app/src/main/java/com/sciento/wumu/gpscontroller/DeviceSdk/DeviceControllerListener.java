@@ -10,11 +10,11 @@ public abstract class DeviceControllerListener {
 
     public DeviceControllerListener(){}
 
-    public void DidGetAllDevice(int errorcode , List<Device> devices){}
+    public void DidGetAllDevice(int errorcode , List<DevicePlus> devices){}
 
     public void DidBindDevice(int errorcode){}
 
-    public void DidUnbindDivce(int errorcode){}
+    public void DidUnbindDevice(int errorcode){}
 
     public void DidUpdateDevice(int errorcode){}
 

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="listcontroller">
+        <item>控制开关</item>
+        <item>设置围栏</item>
+    </string-array>
+</resources>

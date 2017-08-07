@@ -2,6 +2,8 @@ package com.sciento.wumu.gpscontroller.HomeModule;
 
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,11 +20,22 @@ import com.amap.api.maps.LocationSource;
 import com.amap.api.maps.MapView;
 import com.amap.api.maps.TextureMapView;
 import com.amap.api.maps.UiSettings;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.LatLng;
+import com.amap.api.maps.model.Marker;
+import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.MyLocationStyle;
 import com.sciento.wumu.gpscontroller.ConfigModule.Config;
+import com.sciento.wumu.gpscontroller.MqttModule.CurrentLocation;
 import com.sciento.wumu.gpscontroller.MqttModule.DeviceLocation;
 import com.sciento.wumu.gpscontroller.MqttModule.LocationToJson;
 import com.sciento.wumu.gpscontroller.R;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.HashMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,8 +59,18 @@ public class HomeFragment extends Fragment implements
     private AMapLocationClient mlocationClient;
     private AMapLocationClientOption mLocationOption;
 
+    private HashMap<String,Marker> deviceMap = new HashMap<>();
 
 
+    Handler homeHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what){
+
+            }
+            super.handleMessage(msg);
+        }
+    };
 
     private View view;
 
@@ -100,7 +123,36 @@ public class HomeFragment extends Fragment implements
 
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void updateLocation(CurrentLocation currentLocation){
+        LatLng latlng = new LatLng(currentLocation.getLatitude()
+                , currentLocation.getLongitude());
 
+        if(deviceMap.get(currentLocation.getDeviceId()) == null){
+            MarkerOptions markerOption = new MarkerOptions().icon(BitmapDescriptorFactory
+                    .fromResource(R.drawable.icon_car))
+                    .position(latlng)
+                    .draggable(true);
+
+            Marker marker = mainAmap.addMarker(markerOption);
+            marker.setRotateAngle(currentLocation.getBearing());
+            deviceMap.put(currentLocation.getDeviceId(),marker);
+
+        }else {
+            deviceMap.get(currentLocation.getDeviceId()).setPosition(latlng);
+            deviceMap.get(currentLocation.getDeviceId()).setRotateAngle(currentLocation.getBearing());
+        }
+
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
+    }
 
     @Override
     public void onResume() {
@@ -123,6 +175,7 @@ public class HomeFragment extends Fragment implements
 
     @Override
     public void onDestroyView() {
+        EventBus.getDefault().unregister(this);
         super.onDestroyView();
         mainMapview.onDestroy();
         unbinder.unbind();
@@ -130,7 +183,7 @@ public class HomeFragment extends Fragment implements
 
     @Override
     public void onMyLocationChange(Location location) {
-        DeviceLocation.getInstance().sendLocation(Config.TOPICSEND,LocationToJson.getJson(location));
+//        DeviceLocation.getInstance().sendLocation(Config.TOPICSEND,LocationToJson.getJson(location));
     }
 
 
