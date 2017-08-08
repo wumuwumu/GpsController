@@ -137,7 +137,14 @@ public class DeviceFragment extends DeviceBaseFragment {
                 case MSG_UNBOUND:
                     ProgressDialogUtils.getInstance().show(getActivity(),
                             getString(R.string.str_unbind_device));
+                    ListIterator<DevicePlus> deviceListIterator = DeviceBaseFragment.deviceslist.listIterator();
+                    while (deviceListIterator.hasNext()){
+                        if(deviceListIterator.next().getJsonDevice().getId().equals(msg.obj.toString())){
+                            deviceListIterator.next().setSubscribe(false);
+                        }
+                    }
                     DeviceController.getInstance().unBindDevice(userphone,token,msg.obj.toString());
+
                     break;
                 case MSG_UPDATE_DEVICE_LIST:
                     ProgressDialogUtils.getInstance().dismiss();
@@ -217,6 +224,7 @@ public class DeviceFragment extends DeviceBaseFragment {
 //        if (userphone.isEmpty() && token.isEmpty()) {
 //            UserState.issignin = false;
 //        }
+        ToastUtils.makeLongText(UserState.uId,getActivity());
 
     }
 
@@ -357,12 +365,11 @@ public class DeviceFragment extends DeviceBaseFragment {
         unbinder.unbind();
     }
 
-    @Subscribe
+    @Subscribe//用于获取id
     public void onEvent(String event) {
         //Toast.makeText(getActivity(), event.toString(), Toast.LENGTH_SHORT).show();
         boundMessage.clear();
         boundMessage.add(event);
-
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void inInfo(DeciceBean deciceBean){
@@ -373,8 +380,7 @@ public class DeviceFragment extends DeviceBaseFragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void getDeviceInfo(CurrentLocation currentLocation){
 //        handler.sendEmptyMessage(MSG_TEST);
-        Toast.makeText(getActivity(),currentLocation.getDeviceId()+currentLocation.getAltitude(),
-                Toast.LENGTH_SHORT).show();
+        ToastUtils.makeShortText(currentLocation.getDeviceId(),getActivity());
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -430,6 +436,8 @@ public class DeviceFragment extends DeviceBaseFragment {
             Toast.makeText(getActivity(), changeErrorCodeToString(errorcode), Toast.LENGTH_SHORT)
                     .show();
         }else {
+
+            ProgressDialogUtils.getInstance().dismiss();
             Toast.makeText(getActivity(), changeErrorCodeToString(errorcode), Toast.LENGTH_SHORT)
                     .show();
         }
@@ -440,6 +448,7 @@ public class DeviceFragment extends DeviceBaseFragment {
     public void DidUnbindDevice(int errorcode) {
 //        ProgressDialogUtils.getInstance().dismiss();
         if (ErrorCode.CODE_SUCCESS != errorcode) {
+            ProgressDialogUtils.getInstance().dismiss();
             Toast.makeText(getActivity(), changeErrorCodeToString(errorcode), Toast.LENGTH_SHORT)
                     .show();
         }

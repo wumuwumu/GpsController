@@ -167,7 +167,7 @@ public class SdkEventController {
 
 
     public void unBindDevice(final String userphone, final String token , String deviceid){
-        String url =Config.HTTPSERVER+"/api/unBind";
+        String url =Config.HTTPSERVER+"/api/unBind?deviceId="+deviceid;
 
         Map<String, String>map = new HashMap<>();
         map.put("deviceId",deviceid);
@@ -237,10 +237,10 @@ public class SdkEventController {
 
 
     public void getAllDeviceList(String userphone,String token ){
-        String url =Config.HTTPSERVER+"/api/searchDeviceUser";
+        String url =Config.HTTPSERVER+"/api/searchDeviceUser?uId="+UserState.uId;
 
         Map<String, String>map = new HashMap<>();
-        map.put("uId",UserState.uId);
+        map.put("Accept","*/*");
         JSONObject jsonObject = new JSONObject(map);
         // 参数：[请求方式][请求链接][请求参数][成功回调][失败回调]
         JsonObjectRequest mStringRequest = new JsonObjectRequest(
@@ -261,10 +261,15 @@ public class SdkEventController {
                         if(status == 1){
                             try {
                                 jsonArray=  response.getJSONObject("result").getJSONArray("pageInfo");
+//                                List<String> list = new ArrayList<String>();
+//                                for (int i=0; i<jsonArray.length(); i++) {
+//                                    list.add( jsonArray.getString(i) );
+//                                }
+//                                String stringArray = list.toString();
                                 List<JsonDevice> jsonDeviceList = LocationToJson.
-                                        jsonToList(jsonArray.toString(), JsonDevice.class);
+                                        jsonToList(jsonArray.toString());
                                 List<DevicePlus> devicePlusList = new ArrayList<>();
-                                if(jsonDeviceList == null || jsonDeviceList.isEmpty()){
+                                if( jsonDeviceList.isEmpty()){
                                     onDidGetAllDevice(ErrorCode.CODE_SUCCESS,devicePlusList);
                                 }else {
                                     for (int i = 0; i < jsonDeviceList.size(); i++) {

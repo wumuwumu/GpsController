@@ -79,9 +79,26 @@
 
             </android.support.design.widget.TextInputLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp">
+                <CheckBox
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/cb_remember_passwd"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="@string/str_remember_passwd"
+                    android:gravity="center_vertical"/>
+            </LinearLayout>
+
             <Button
                 android:id="@+id/phone_sign_in_button"
                 style="?android:textAppearanceSmall"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="25dp"
@@ -133,10 +150,6 @@
             android:layout_gravity="center"
             android:textColor="@color/colorWhite"
             android:text="@string/str_skip"/>
-
-
-
-
 
     </LinearLayout>
 

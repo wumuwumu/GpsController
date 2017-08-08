@@ -19,6 +19,7 @@
     <string name="str_noaccount_register">没有账号？注册</string>
     <string name="str_forget_passwd">忘记密码</string>
     <string name="str_phone">手机号</string>
+    <string name="str_remember_passwd">记住密码</string>
     <string name="tip_please_input_phone">请输入手机号码</string>
     <string name="tip_phone_can_not_be_empty">手机号码不能为空</string>
     <string name="tip_please_input_code">请输入验证码</string>

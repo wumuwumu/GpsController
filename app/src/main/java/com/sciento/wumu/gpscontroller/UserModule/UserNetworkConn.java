@@ -1,9 +1,7 @@
 package com.sciento.wumu.gpscontroller.UserModule;
 
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
@@ -13,10 +11,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.sciento.wumu.gpscontroller.CommonModule.AppContext;
 import com.sciento.wumu.gpscontroller.ConfigModule.Config;
-import com.sciento.wumu.gpscontroller.ConfigModule.StateCode;
+import com.sciento.wumu.gpscontroller.ConfigModule.UserStateCode;
 import com.sciento.wumu.gpscontroller.ConfigModule.UserState;
-import com.sciento.wumu.gpscontroller.R;
-import com.sciento.wumu.gpscontroller.Utils.NetworkUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -62,15 +58,15 @@ public class UserNetworkConn {
                         try {
                             code = response.getInt("status");
 
-                        if (code == StateCode.USER_SUCCESS) {
+                        if (code == UserStateCode.USER_SUCCESS) {
                             Message msg = Message.obtain();
-                            msg.what = StateCode.USER_SUCCESS;
+                            msg.what = UserStateCode.USER_SUCCESS;
                             handler.sendMessage(msg);
                             UserState.uId = response.getJSONObject("result").getString("uid");
 //                            UserState.referer = response.getString("referer");
                         } else {
                             Message msg = Message.obtain();
-                            msg.what = StateCode.USER_SIGN_NOMATCH;
+                            msg.what = UserStateCode.USER_SIGN_NOMATCH;
                             handler.sendMessage(msg);
                         }
                         } catch (JSONException e) {
@@ -91,7 +87,7 @@ public class UserNetworkConn {
 //                        }
 
                         Message msg = Message.obtain();
-                        msg.what = StateCode.REQUEST_ERROR;
+                        msg.what = UserStateCode.REQUEST_ERROR;
                         handler.sendMessage(msg);
 
                     }
@@ -110,6 +106,105 @@ public class UserNetworkConn {
         AppContext.getRequestQueue().add(jsonObjectRequest);// 将请求添加进队列
     }
 
+    public void registerUser(Map<String, String> params, final Handler handler){
+        JSONObject jsonObject = new JSONObject(params);// 将 Map 转为 JsonObject 的参数
+        String url = Config.HTTPSERVER+"/api/reg";
+        // 参数：[请求方式][请求链接][请求参数][成功回调][失败回调]
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.POST,
+                url,
+                jsonObject,
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        int code = -2;
+                        String reponseMsg = null;
+                        try {
+                            code = response.getInt("status");
+                            reponseMsg = response.getString("msg");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        if(code == 1){
+                            Message msg = Message.obtain();
+                            msg.what = UserStateCode.USER_SUCCESS;
+                            msg.obj = reponseMsg;
+                            handler.sendMessage(msg);
+                        }else if(code == 0){
+                            Message msg = Message.obtain();
+                            msg.what = UserStateCode.USER_REGISTER_FAIL;
+                            msg.obj = reponseMsg;
+                            handler.sendMessage(msg);
+                        }
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Message msg = Message.obtain();
+                        msg.what = UserStateCode.USER_LINK_SERVER_FAIL;
+                        handler.sendMessage(msg);
+
+                    }
+                });
+
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                20 * 1000, 1, 1.0f));
+        jsonObjectRequest.setTag("reg");// 设置标签
+        AppContext.getRequestQueue().add(jsonObjectRequest);// 将请求添加进队列
+    }
+
+    public void forgetUser(Map<String, String> params, final Handler handler){
+        JSONObject jsonObject = new JSONObject(params);// 将 Map 转为 JsonObject 的参数
+        String url = Config.HTTPSERVER +"/api/modifyPswd";
+        // 参数：[请求方式][请求链接][请求参数][成功回调][失败回调]
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.POST,
+                url,
+                jsonObject,
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        int code = -2;
+                        String reponseMsg = null;
+                        try {
+                            code = response.getInt("status");
+                            reponseMsg = response.getString("msg");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        if(code == 1){
+                            Message msg = Message.obtain();
+                            msg.what = UserStateCode.USER_SUCCESS;
+                            msg.obj = reponseMsg;
+                            handler.sendMessage(msg);
+                        }else {
+                            Message msg = Message.obtain();
+                            msg.what = UserStateCode.USER_FORGET_FAIL;
+                            msg.obj = reponseMsg;
+                            handler.sendMessage(msg);
+                        }
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Message msg = Message.obtain();
+                        msg.what = UserStateCode.USER_LINK_SERVER_FAIL;
+                        handler.sendMessage(msg);
+
+                    }
+                });
+
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                20 * 1000, 1, 1.0f));
+        jsonObjectRequest.setTag("123456");// 设置标签
+        AppContext.getRequestQueue().add(jsonObjectRequest);// 将请求添加进队列
+    }
 
 
 

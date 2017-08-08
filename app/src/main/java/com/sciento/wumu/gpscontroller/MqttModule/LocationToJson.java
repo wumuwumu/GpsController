@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.sciento.wumu.gpscontroller.Model.DeviceState;
+import com.sciento.wumu.gpscontroller.Model.JsonDevice;
 import com.sciento.wumu.gpscontroller.Model.SendFenceBean;
 
 import java.util.List;
@@ -66,8 +67,8 @@ public class LocationToJson {
         return json;
     }
 
-    public static <T> List<T> jsonToList(String json, Class<T> typeOfT) {
-        List<T> list = gson.fromJson(json, new TypeToken<List<T>>(){}.getType());
+    public static  List<JsonDevice> jsonToList(String json) {
+        List<JsonDevice> list = gson.fromJson(json, new TypeToken<List<JsonDevice>>(){}.getType());
         return list;
     }
 

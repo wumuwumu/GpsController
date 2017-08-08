@@ -20,13 +20,16 @@ import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.sciento.wumu.gpscontroller.CommonModule.MainActivity;
 import com.sciento.wumu.gpscontroller.ConfigModule.Config;
-import com.sciento.wumu.gpscontroller.ConfigModule.StateCode;
 import com.sciento.wumu.gpscontroller.ConfigModule.UserState;
+import com.sciento.wumu.gpscontroller.ConfigModule.UserStateCode;
 import com.sciento.wumu.gpscontroller.R;
 import com.sciento.wumu.gpscontroller.Utils.Md5Util;
 import com.sciento.wumu.gpscontroller.Utils.ProgressDialogUtils;
@@ -56,14 +59,19 @@ public class UserLoginActivity extends AppCompatActivity {
     TextView tvForgetPasswd;
     @BindView(R.id.tv_skip)
     TextView tvSkip;
+    @BindView(R.id.cb_remember_passwd)
+    CheckBox cbRememberPasswd;
 
 
     private static final int REQUEST_CODE_SETTING = 12;
 
-    private static final int MSG_REQUEST_ERROR = 500;
+    private static final int MSG_AUTOMATIC_LOGIN = 404;
 
-    private String phone ;
-    private String password ;
+
+
+    private String phone;
+    private String password;
+    private boolean remember;
 
     private UserLoginTask mAuthTask = null;
 
@@ -74,6 +82,9 @@ public class UserLoginActivity extends AppCompatActivity {
     private View mLoginFormView;
 
 
+    SharedPreferences sharedPreferences;
+
+
     Handler loginHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -81,15 +92,16 @@ public class UserLoginActivity extends AppCompatActivity {
             showProgress(false);
             ProgressDialogUtils.getInstance().dismiss();
             switch (msg.what) {
-                case StateCode.USER_SUCCESS:
+                case UserStateCode.USER_SUCCESS:
                     UserState.issignin = true;
                     UserState.username = phone;
-                    UserState.userpasswd =  password;
-                    SharedPreferences sharedPreferences = getSharedPreferences("gps", MODE_PRIVATE);
+                    UserState.userpasswd = password;
+                    sharedPreferences = getSharedPreferences("gps", MODE_PRIVATE);
                     //得到SharedPreferences.Editor对象，并保存数据到该对象中
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString("phone", phone);
-                    editor.putString("passwd", Md5Util.md5(password));
+                    editor.putString("passwd", password);
+                    editor.putBoolean("remember",remember);
 
                     editor.commit();
 
@@ -97,13 +109,36 @@ public class UserLoginActivity extends AppCompatActivity {
                     startActivity(intent);
                     finish();
                     break;
-                case StateCode.USER_SIGN_NOMATCH:
+                case UserStateCode.USER_SIGN_NOMATCH:
                     mPasswordView.setError(getString(R.string.error_incorrect_password));
                     mPasswordView.requestFocus();
                     break;
 
-                case StateCode.REQUEST_ERROR:
-                    ToastUtils.makeShortText(getString(R.string.error_login_request),UserLoginActivity.this);
+                case UserStateCode.REQUEST_ERROR:
+                    ToastUtils.makeShortText(getString(R.string.error_login_request), UserLoginActivity.this);
+                    break;
+                case MSG_AUTOMATIC_LOGIN:
+                    sharedPreferences = getSharedPreferences("gps", MODE_PRIVATE);
+                    if(sharedPreferences == null){
+                        break;
+                    }
+                    if(sharedPreferences.getBoolean("remember",false) == true){
+                        phone = sharedPreferences.getString("phone","15626475082");
+                        password = sharedPreferences.getString("passwd","123456");
+                        Map<String, String> params = new HashMap<>();
+                        params.put("account", phone);
+                        params.put("password", password);
+                        remember =true;
+
+
+                        UserNetworkConn.getInstance().requestServer(
+                                Request.Method.POST,
+                                Config.HTTPSERVER + "/api/login",
+                                params,
+                                loginHandler
+                        );
+
+                    }
                     break;
             }
 
@@ -128,6 +163,7 @@ public class UserLoginActivity extends AppCompatActivity {
                 AndPermission.rationaleDialog(UserLoginActivity.this, arg1).show();
             }
         }).start();
+        loginHandler.sendEmptyMessage(MSG_AUTOMATIC_LOGIN);
         init();
 
     }
@@ -222,17 +258,17 @@ public class UserLoginActivity extends AppCompatActivity {
                     UserLoginActivity.this, "正在请求...");
             //mAuthTask = new UserLoginTask(phone, password);
             //mAuthTask.execute((Void) null);
-
+            remember = cbRememberPasswd.isChecked();
             Map<String, String> params = new HashMap<>();
             params.put("account", phone);
             params.put("password", password);
 
             UserNetworkConn.getInstance().requestServer(
                     Request.Method.POST,
-                    Config.HTTPSERVER+"/api/login",
+                    Config.HTTPSERVER + "/api/login",
                     params,
                     loginHandler
-                    );
+            );
 
 
 //            JSONObject jsonObject = new JSONObject(params);// 将 Map 转为 JsonObject 的参数
@@ -251,13 +287,13 @@ public class UserLoginActivity extends AppCompatActivity {
 //                            } catch (JSONException e) {
 //                                e.printStackTrace();
 //                            }
-//                            if (code == StateCode.USER_SUCCESS) {
+//                            if (code == UserStateCode.USER_SUCCESS) {
 //                                Message msg = Message.obtain();
-//                                msg.what = StateCode.USER_SUCCESS;
+//                                msg.what = UserStateCode.USER_SUCCESS;
 //                                loginHandler.sendMessage(msg);
 //                            } else {
 //                                Message msg = Message.obtain();
-//                                msg.what = StateCode.USER_SIGN_NOMATCH;
+//                                msg.what = UserStateCode.USER_SIGN_NOMATCH;
 //                                loginHandler.sendMessage(msg);
 //                            }
 //                        }
@@ -291,18 +327,18 @@ public class UserLoginActivity extends AppCompatActivity {
     @OnClick({R.id.tv_forget_passwd,
             R.id.tv_register,
             R.id.tv_skip})
-    void OnClick(View view){
-        switch (view.getId()){
+    void OnClick(View view) {
+        switch (view.getId()) {
             case R.id.tv_forget_passwd:
-                Intent foregetIntent  = new Intent(UserLoginActivity.this,UserForgetActivity.class);
+                Intent foregetIntent = new Intent(UserLoginActivity.this, UserForgetActivity.class);
                 startActivity(foregetIntent);
                 break;
             case R.id.tv_register:
-                Intent registerIntent  = new Intent(UserLoginActivity.this,UserRegisterActivity.class);
+                Intent registerIntent = new Intent(UserLoginActivity.this, UserRegisterActivity.class);
                 startActivity(registerIntent);
                 break;
             case R.id.tv_skip:
-                Intent skipIntent = new Intent(UserLoginActivity.this,MainActivity.class);
+                Intent skipIntent = new Intent(UserLoginActivity.this, MainActivity.class);
                 startActivity(skipIntent);
                 finish();
                 break;

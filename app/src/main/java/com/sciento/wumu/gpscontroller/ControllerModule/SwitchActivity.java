@@ -74,7 +74,7 @@ public class SwitchActivity extends AppCompatActivity {
         DeviceState deviceState = new DeviceState();
         deviceState.setPower(enswitch);
         deviceState.setDeviceId(deviceId);
-        DeviceLocation.getInstance().sendLocation("topic://"+deviceId+"/down/power",
+        DeviceLocation.getInstance().sendRetainMessage("topic://"+deviceId+"/down/power",
                 LocationToJson.getStateJson(deviceState));
     }
 }

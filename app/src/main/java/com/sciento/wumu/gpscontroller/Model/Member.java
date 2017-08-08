@@ -131,21 +131,21 @@ public class Member extends BaseEntity  {
 
     private List<JsonDevice> jsonDeviceList;
 
-    @Override
-    public String toString() {
-        return "Member{" +
-                "uid='" + uid + '\'' +
-                ", account='" + account + '\'' +
-                ", password='" + password + '\'' +
-                ", phone='" + phone + '\'' +
-                ", bindNum=" + bindNum +
-                ", salt='" + salt + '\'' +
-                ", state=" + state +
-                ", createdAt='" + createdAt + '\'' +
-                ", updatedAt='" + updatedAt + '\'' +
-                ", sort='" + sort + '\'' +
-                ", order='" + order + '\'' +
-                ", jsonDeviceList=" + jsonDeviceList +
-                '}';
-    }
+//    @Override
+//    public String toString() {
+//        return "Member{" +
+//                "uid='" + uid + '\'' +
+//                ", account='" + account + '\'' +
+//                ", password='" + password + '\'' +
+//                ", phone='" + phone + '\'' +
+//                ", bindNum=" + bindNum +
+//                ", salt='" + salt + '\'' +
+//                ", state=" + state +
+//                ", createdAt='" + createdAt + '\'' +
+//                ", updatedAt='" + updatedAt + '\'' +
+//                ", sort='" + sort + '\'' +
+//                ", order='" + order + '\'' +
+//                ", jsonDeviceList=" + jsonDeviceList +
+//                '}';
+//    }
 }
