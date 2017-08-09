@@ -1,36 +1,35 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.sciento.wumu.gpscontroller.DeviceModule.DeviceFragment">
 
 
         <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/toolbar"
             android:background="@color/colorPrimary"
             app:popupTheme="@style/ToolbarPopupTheme">
         </android.support.v7.widget.Toolbar>
 
         <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swiperefreshlayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/swiperefreshlayout"
             android:layout_below="@+id/toolbar">
 
                 <android.support.v4.widget.NestedScrollView
+                    android:id="@+id/netstedscrollview"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/netstedscrollview">
+                    android:layout_height="wrap_content">
                         <include
-                            layout="@layout/content_device_list"
-                                android:id="@+id/layout_device_list"/>
+                            android:id="@+id/layout_device_list"
+                            layout="@layout/content_device_list" />
 
                 </android.support.v4.widget.NestedScrollView>
         </android.support.v4.widget.SwipeRefreshLayout>
-
 
 
 </RelativeLayout>

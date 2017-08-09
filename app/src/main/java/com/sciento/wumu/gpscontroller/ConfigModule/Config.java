@@ -14,7 +14,7 @@ public class Config {
     public static final String TOPICGET ="topic://wumu/down";
     public static final String CLIENTID =  "wumu12";
 
-    public static final String MQTTNODE = "emqttd@39.108.8.161";
+    public static final String MQTTNODE = "emqttd@127.0.0.1";
 
     //http
     public static final String HTTPSERVER =  "http://192.168.0.121:8080";

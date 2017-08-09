@@ -48,30 +48,21 @@ public class ShowInfoFragment extends Fragment implements
 {
 
 
+    final int MSG_ADD_MARKER = 333;
     @BindView(R.id.main_mapview)
     TextureMapView mainMapview;
     @BindView(R.id.btn_showmarker)
     Button btn_showmarker;
     Unbinder unbinder;
-
-
-
+    IMqttToken subToken;
+    Marker marker;
     private AMap mainAmap =null;
     private UiSettings mUiSettings;
     private LocationSource.OnLocationChangedListener mLocationChangedListener;
     private AMapLocationClient mlocationClient;
     private AMapLocationClientOption mLocationOption;
-
-
-    IMqttToken subToken;
-
-    Marker marker;
     private MarkerOptions markerOption;
     private LatLng latlng = new LatLng(39.761, 116.434);
-    final int MSG_ADD_MARKER = 333;
-
-    private View view;
-
     Handler handler = new Handler(){
 
         @Override
@@ -96,9 +87,16 @@ public class ShowInfoFragment extends Fragment implements
             }
         }
     };
+    private View view;
 
     public ShowInfoFragment() {
         // Required empty public constructor
+    }
+
+    // TODO: Rename and change types and number of parameters
+    public static ShowInfoFragment newInstance() {
+        ShowInfoFragment fragment = new ShowInfoFragment();
+        return fragment;
     }
 
     @OnClick(R.id.btn_showmarker)
@@ -108,14 +106,6 @@ public class ShowInfoFragment extends Fragment implements
                 .draggable(true);
         marker = mainAmap.addMarker(markerOption);
 
-    }
-
-
-
-    // TODO: Rename and change types and number of parameters
-    public static ShowInfoFragment newInstance() {
-        ShowInfoFragment fragment = new ShowInfoFragment();
-        return fragment;
     }
 
     @Override
@@ -253,7 +243,7 @@ public class ShowInfoFragment extends Fragment implements
     public void onMyLocationChange(Location location) {
 
 
-        DeviceLocation.getInstance().sendLocation(Config.TOPICSEND,LocationToJson.getJson(location));
+//        DeviceLocation.getInstance().sendLocation(Config.TOPICSEND,LocationToJson.getJson(location));
     }
 
 

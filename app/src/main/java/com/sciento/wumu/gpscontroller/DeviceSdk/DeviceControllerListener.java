@@ -18,4 +18,7 @@ public abstract class DeviceControllerListener {
 
     public void DidUpdateDevice(int errorcode){}
 
+    public void DidRequestError(String errormessage) {
+    }
+
 }

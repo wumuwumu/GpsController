@@ -9,9 +9,11 @@ import android.widget.Button;
 import com.sciento.wumu.gpscontroller.DeviceModule.DeviceBaseFragment;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DevicePlus;
 import com.sciento.wumu.gpscontroller.Model.DeviceState;
+import com.sciento.wumu.gpscontroller.Model.JsonDevice;
 import com.sciento.wumu.gpscontroller.MqttModule.DeviceLocation;
 import com.sciento.wumu.gpscontroller.MqttModule.LocationToJson;
 import com.sciento.wumu.gpscontroller.R;
+import com.sciento.wumu.gpscontroller.Utils.ToastUtils;
 
 import java.util.ListIterator;
 
@@ -21,27 +23,25 @@ import butterknife.OnClick;
 
 public class SwitchActivity extends AppCompatActivity {
 
+    private final int MSG_UPDATE_BTN = 123;
     @BindView(R.id.btn_switch_device)
     Button btnSwitchDevice;
-    boolean enswitch = false;
+    boolean enswitch;
     String deviceId;
-
-     private final  int MSG_UPDATE_BTN = 123;
-
     Handler switchHandler = new Handler(){
 
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what){
                 case MSG_UPDATE_BTN:
-                    ListIterator<DevicePlus> deviceListIterator = DeviceBaseFragment.deviceslist.listIterator();
-                    while (deviceListIterator.hasNext()){
-                        if(deviceListIterator.next().getJsonDevice().getId().equals(deviceId)){
-                            enswitch = deviceListIterator.next().getJsonDevice().isPower();
-                            if(enswitch){
-                                btnSwitchDevice.setText(getString(R.string.str_open));
-                            }else {
+                    for (int i = 0; i < DeviceBaseFragment.deviceslist.size(); i++) {
+                        if (DeviceBaseFragment.deviceslist.get(i).getJsonDevice().getId().equals(deviceId)) {
+                            enswitch = DeviceBaseFragment.deviceslist.get(i).getJsonDevice().isPower();
+                            if (!enswitch) {
                                 btnSwitchDevice.setText(getString(R.string.str_close));
+
+                            } else {
+                                btnSwitchDevice.setText(getString(R.string.str_open));
                             }
                         }
                     }

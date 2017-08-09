@@ -5,16 +5,17 @@ package com.sciento.wumu.gpscontroller.Event;
  */
 
 public class DeviceDisconnect {
-    String deviceId;
+    String clientid;
     String reason;
     long ts;
 
-    public String getDeviceId() {
-        return deviceId;
+
+    public String getClientid() {
+        return clientid;
     }
 
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
+    public void setClientid(String clientid) {
+        this.clientid = clientid;
     }
 
     public String getReason() {

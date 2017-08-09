@@ -10,6 +10,8 @@ public class SendFenceBean {
     private Double longitude;    // 经度
     private Double latitude;     // 纬度
     private Double radius;       // 半径
+    private boolean state;       //是否启用
+
 
     public String getId() {
         return id;
@@ -51,5 +53,5 @@ public class SendFenceBean {
         this.state = state;
     }
 
-    private boolean state;       //是否启用
+
 }

@@ -22,37 +22,6 @@ import org.greenrobot.eventbus.EventBus;
 
 public class DevicePlus {
     protected DeviceListener deviceListener;
-
-    private boolean subscribed = false;
-
-    private JsonDevice jsonDevice ;
-
-
-
-
-
-    public boolean isSubscribed() {
-        return subscribed;
-    }
-
-    public void setSubscribed(boolean subscribed) {
-        this.subscribed = subscribed;
-    }
-
-
-
-    public JsonDevice getJsonDevice() {
-        return jsonDevice;
-    }
-
-    public void setJsonDevice(JsonDevice jsonDevice) {
-        this.jsonDevice = jsonDevice;
-    }
-
-
-
-
-
     IMqttActionListener iMqttActionListener = new IMqttActionListener(){
 
         @Override
@@ -65,7 +34,6 @@ public class DevicePlus {
             deviceListener.didSubscribeState(null,0);
         }
     };
-
     MqttCallback mqttCallback = new MqttCallback() {
         @Override
         public void connectionLost(Throwable cause) {
@@ -88,9 +56,24 @@ public class DevicePlus {
 
         }
     };
+    private boolean subscribed = false;
+    private JsonDevice jsonDevice;
 
+    public boolean isSubscribed() {
+        return subscribed;
+    }
 
+    public void setSubscribed(boolean subscribed) {
+        this.subscribed = subscribed;
+    }
 
+    public JsonDevice getJsonDevice() {
+        return jsonDevice;
+    }
+
+    public void setJsonDevice(JsonDevice jsonDevice) {
+        this.jsonDevice = jsonDevice;
+    }
 
     public void setDeviceListener(DeviceListener deviceListener){
         this.deviceListener = deviceListener;
@@ -111,7 +94,7 @@ public class DevicePlus {
                                     "/clients/"+jsonDevice.getId()+"/connected", 0);
                     IMqttToken subTokenDis = DeviceLocation.getInstance().getMqttAndroidClient()
                             .subscribe("$SYS/brokers/"+Config.MQTTNODE+
-                                    "/clients/"+jsonDevice.getId()+"/connected", 0);
+                                    "/clients/" + jsonDevice.getId() + "/disconnected", 0);
 //                    DeviceLocation.getInstance().getMqttAndroidClient()
 //                            .subscribe(Config.TOPICSEND, 0);
                     subToken.setActionCallback(iMqttActionListener);
@@ -127,7 +110,13 @@ public class DevicePlus {
             if(isSubscribed()){
                 try {
                     IMqttToken subToken = DeviceLocation.getInstance().getMqttAndroidClient()
-                            .unsubscribe("topic://"+jsonDevice.getId()+"/up");
+                            .unsubscribe("topic://" + jsonDevice.getId() + "/up/location");
+                    IMqttToken subTokenConn = DeviceLocation.getInstance().getMqttAndroidClient()
+                            .unsubscribe("$SYS/brokers/" + Config.MQTTNODE +
+                                    "/clients/" + jsonDevice.getId() + "/connected");
+                    IMqttToken subTokenDis = DeviceLocation.getInstance().getMqttAndroidClient()
+                            .unsubscribe("$SYS/brokers/" + Config.MQTTNODE +
+                                    "/clients/" + jsonDevice.getId() + "/disconnected");
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }

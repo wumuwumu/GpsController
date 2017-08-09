@@ -1,6 +1,9 @@
 package com.sciento.wumu.gpscontroller.DeviceModule;
 
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -37,8 +40,10 @@ import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceController;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceListAdapter;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceListener;
 import com.sciento.wumu.gpscontroller.DeviceSdk.ErrorCode;
+import com.sciento.wumu.gpscontroller.Event.Alarm;
 import com.sciento.wumu.gpscontroller.Event.DeviceConnected;
 import com.sciento.wumu.gpscontroller.Event.DeviceDisconnect;
+import com.sciento.wumu.gpscontroller.Model.FenceInfo;
 import com.sciento.wumu.gpscontroller.Model.JsonDevice;
 import com.sciento.wumu.gpscontroller.MqttModule.CurrentLocation;
 import com.sciento.wumu.gpscontroller.MqttModule.LocationToJson;
@@ -47,6 +52,7 @@ import com.sciento.wumu.gpscontroller.Utils.ProgressDialogUtils;
 import com.sciento.wumu.gpscontroller.Utils.ToastUtils;
 import com.sciento.wumu.gpscontroller.View.SlideListView;
 
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -73,27 +79,9 @@ import butterknife.Unbinder;
 public class DeviceFragment extends DeviceBaseFragment {
 
 
-    @BindView(R.id.toolbar)
-    Toolbar toolbar;
-    Unbinder unbinder;
-
-    //声明相关的变量
-    private View icBundleDevice;
-    private View icOfflineDevice;
-
-    private TextView tvBundleDeviceStatus;
-    private TextView tvOfflineDeviceStatus;
-
-    private LinearLayout llBundleDevice;
-    private LinearLayout llOfflineDevice;
-
-    private SlideListView slvBundleDevice;
-    private SlideListView slvOfflineDevice;
-
-    private NestedScrollView nestedScrollView;
-
-    private SwipeRefreshLayout swipeRefreshLayout;
-
+    static final int NOTIFICATION_ID = 0X1234;
+    //
+    public static List<String> boundMessage = new ArrayList<>();
     //Handler message
     private final int MSG_GET_DEVICE_LIST = 10;
     private final int MSG_UPDATE_DEVICE_LIST = 11;
@@ -103,21 +91,44 @@ public class DeviceFragment extends DeviceBaseFragment {
     private final int MSG_UPDATEUI = 15;
     private final int MSG_SWIPE_REFRESH = 16;
     private final int MSG_TEST = 33;
-
-
-    //
-    public static List<String> boundMessage = new ArrayList<>();
-
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+    Unbinder unbinder;
     List<DevicePlus> boundDeviceList;
     List<DevicePlus> offlineDevicesList;
+    NotificationManager nm;
+    DeviceListener deviceListener = new DeviceListener() {
 
+        @Override
+        public void didSubscribeState(DevicePlus device, int result) {
 
+            ToastUtils.makeShortText("" + result, getActivity());
+        }
+
+        @Override
+        public void didInfo(String info) {
+            ToastUtils.makeShortText(info, getActivity());
+        }
+
+        @Override
+        public void didUpdateLocation(String deviceid, CurrentLocation currentLocation) {
+            ToastUtils.makeShortText(deviceid, getActivity());
+        }
+    };
+    //声明相关的变量
+    private View icBundleDevice;
+    private View icOfflineDevice;
+    private TextView tvBundleDeviceStatus;
+    private TextView tvOfflineDeviceStatus;
+    private LinearLayout llBundleDevice;
+    private LinearLayout llOfflineDevice;
+    private SlideListView slvBundleDevice;
+    private SlideListView slvOfflineDevice;
+    private NestedScrollView nestedScrollView;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private DeviceListAdapter deviceListAdapter;
-
     private String userphone;
     private String token;
-
-
     Handler handler = new Handler() {
 
         @Override
@@ -137,10 +148,15 @@ public class DeviceFragment extends DeviceBaseFragment {
                 case MSG_UNBOUND:
                     ProgressDialogUtils.getInstance().show(getActivity(),
                             getString(R.string.str_unbind_device));
-                    ListIterator<DevicePlus> deviceListIterator = DeviceBaseFragment.deviceslist.listIterator();
-                    while (deviceListIterator.hasNext()){
-                        if(deviceListIterator.next().getJsonDevice().getId().equals(msg.obj.toString())){
-                            deviceListIterator.next().setSubscribe(false);
+//                    ListIterator<DevicePlus> deviceListIterator = DeviceBaseFragment.deviceslist.listIterator();
+//                    while (deviceListIterator.hasNext()){
+//                        if(deviceListIterator.next().getJsonDevice().getId().equals(msg.obj.toString())){
+//                            deviceListIterator.next().setSubscribe(false);
+//                        }
+//                    }
+                    for (int i = 0; i < DeviceBaseFragment.deviceslist.size(); i++) {
+                        if (DeviceBaseFragment.deviceslist.get(i).getJsonDevice().getId().equals(msg.obj.toString())) {
+                            DeviceBaseFragment.deviceslist.get(i).setSubscribe(false);
                         }
                     }
                     DeviceController.getInstance().unBindDevice(userphone,token,msg.obj.toString());
@@ -172,26 +188,6 @@ public class DeviceFragment extends DeviceBaseFragment {
         }
     };
 
-    DeviceListener deviceListener = new DeviceListener(){
-
-        @Override
-        public void didSubscribeState(DevicePlus device, int result) {
-
-            ToastUtils.makeShortText(""+result,getActivity());
-        }
-
-        @Override
-        public void didInfo(String info) {
-            ToastUtils.makeShortText(info,getActivity());
-        }
-
-        @Override
-        public void didUpdateLocation(String deviceid, CurrentLocation currentLocation) {
-            ToastUtils.makeShortText(deviceid,getActivity());
-        }
-    };
-
-
     public static DeviceFragment newInstance() {
         DeviceFragment fragment = new DeviceFragment();
 
@@ -206,25 +202,27 @@ public class DeviceFragment extends DeviceBaseFragment {
         View view = inflater.inflate(R.layout.fragment_device, container, false);
         unbinder = ButterKnife.bind(this, view);
 
-        handler.sendEmptyMessage(MSG_GET_DEVICE_LIST);
+
         initData();
         initView(view);
         initEvent();
 
         setHasOptionsMenu(true);
-
+        handler.sendEmptyMessage(MSG_GET_DEVICE_LIST);
 
         return view;
     }
 
     private void initData() {
+        nm = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+
 //        userphone = sharedPreferences.getString("Uid", "");
 //        token = sharedPreferences.getString("Token", "");
 //
 //        if (userphone.isEmpty() && token.isEmpty()) {
 //            UserState.issignin = false;
 //        }
-        ToastUtils.makeLongText(UserState.uId,getActivity());
+//        ToastUtils.makeLongText(UserState.uId,getActivity());
 
     }
 
@@ -236,25 +234,6 @@ public class DeviceFragment extends DeviceBaseFragment {
             }
         });
 
-        slvBundleDevice.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                ProgressDialogUtils.getInstance().show(getActivity(),
-//                        getString(R.string.str_start_subscribe));
-//                slvBundleDevice.setEnabled(false);
-//                slvBundleDevice.postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        slvBundleDevice.setEnabled(true);
-//                    }
-//                },3000);
-
-                ToastUtils.makeShortText("dddsdfasfsf",getActivity());
-//                device.setDeviceListener(getDeviceListener());
-
-               //没有完成
-            }
-        });
     }
 
     private void initView(View view) {
@@ -385,11 +364,17 @@ public class DeviceFragment extends DeviceBaseFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void getDeviceConnected(DeviceConnected deviceConnected){
-        String deviceId = deviceConnected.getDeviceId();
-        ListIterator<DevicePlus> deviceListIterator = DeviceBaseFragment.deviceslist.listIterator();
-        while (deviceListIterator.hasNext()){
-            if(deviceListIterator.next().getJsonDevice().getId().equals(deviceId)){
-                deviceListIterator.next().getJsonDevice().setOnline(true);
+        String deviceId = deviceConnected.getClientid();
+//        ListIterator<DevicePlus> deviceListIterator = DeviceBaseFragment.deviceslist.listIterator();
+//        while (deviceListIterator.hasNext()){
+//            if(deviceListIterator.next().getJsonDevice().getId().equals(deviceId)){
+//                deviceListIterator.next().getJsonDevice().setOnline(true);
+//                handler.sendEmptyMessage(MSG_UPDATEUI);
+//            }
+//        }
+        for (int i = 0; i < DeviceBaseFragment.deviceslist.size(); i++) {
+            if (DeviceBaseFragment.deviceslist.get(i).getJsonDevice().getId().equals(deviceId)) {
+                DeviceBaseFragment.deviceslist.get(i).getJsonDevice().setOnline(true);
                 handler.sendEmptyMessage(MSG_UPDATEUI);
             }
         }
@@ -397,14 +382,36 @@ public class DeviceFragment extends DeviceBaseFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void getDeviceDisconnect(DeviceDisconnect deviceDisconnect){
-        String deviceId = deviceDisconnect.getDeviceId();
-        ListIterator<DevicePlus> deviceListIterator = DeviceBaseFragment.deviceslist.listIterator();
-        while (deviceListIterator.hasNext()){
-            if(deviceListIterator.next().getJsonDevice().getId().equals(deviceId)){
-                deviceListIterator.next().getJsonDevice().setOnline(false);
+        String deviceId = deviceDisconnect.getClientid();
+//        ListIterator<DevicePlus> deviceListIterator = DeviceBaseFragment.deviceslist.listIterator();
+//        while (deviceListIterator.hasNext()){
+//            if(deviceListIterator.next().getJsonDevice().getId().equals(deviceId)){
+//                deviceListIterator.next().getJsonDevice().setOnline(false);
+//                handler.sendEmptyMessage(MSG_UPDATEUI);
+//            }
+//        }
+        for (int i = 0; i < DeviceBaseFragment.deviceslist.size(); i++) {
+            if (DeviceBaseFragment.deviceslist.get(i).getJsonDevice().getId().equals(deviceId)) {
+                DeviceBaseFragment.deviceslist.get(i).getJsonDevice().setOnline(false);
                 handler.sendEmptyMessage(MSG_UPDATEUI);
             }
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void getmqtt(MqttMessage message) {
+        ToastUtils.makeShortText(message.toString(), getActivity());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void alarm(Alarm alarm) {
+        Notification notification = new Notification.Builder(getActivity())
+                .setTicker(getString(R.string.str_alarm))
+                .setSmallIcon(R.drawable.ic_priority_high_black_24dp)
+                .setContentText(getString(R.string.str_device_name) + alarm.getDeviceName() + getString(R.string.str_show_alarm))
+                .setDefaults(Notification.DEFAULT_ALL)
+                .build();
+        nm.notify(NOTIFICATION_ID, notification);
     }
 
 
@@ -416,12 +423,16 @@ public class DeviceFragment extends DeviceBaseFragment {
             DeviceBaseFragment.deviceslist.clear();
             for (DevicePlus device : devices) {
                 DeviceBaseFragment.deviceslist.add(device);
-                device.setDeviceListener(deviceListener);
-                device.setSubscribe(true);
+
+            }
+
+            for (DevicePlus devicePlus : DeviceBaseFragment.deviceslist) {
+                devicePlus.setDeviceListener(deviceListener);
+                devicePlus.setSubscribe(true);
             }
             handler.sendEmptyMessage(MSG_UPDATE_DEVICE_LIST);
-            Toast.makeText(getActivity(), changeErrorCodeToString(errorcode), Toast.LENGTH_SHORT)
-                    .show();
+//            Toast.makeText(getActivity(), changeErrorCodeToString(errorcode), Toast.LENGTH_SHORT)
+//                    .show();
         }else {
             Toast.makeText(getActivity(), changeErrorCodeToString(errorcode), Toast.LENGTH_SHORT)
                     .show();
@@ -460,6 +471,11 @@ public class DeviceFragment extends DeviceBaseFragment {
     }
 
     @Override
+    public void DidRequestError(String errormessage) {
+        ToastUtils.makeShortText(errormessage, getActivity());
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_device, menu);
         super.onCreateOptionsMenu(menu, inflater);
@@ -473,41 +489,29 @@ public class DeviceFragment extends DeviceBaseFragment {
                 startActivity(qrcodeIntent);
                 break;
             case R.id.action_test:
-                String url =Config.HTTPSERVER+"/api/bind";
-
+                String deviceid = "12345676543212445543444444";
+                String url = Config.HTTPSERVER + "/api/getRail?deviceId=" + deviceid;
                 Map<String, String>map = new HashMap<>();
-                map.put("userName",UserState.username);
-                map.put("deviceId","123435678888888888888888886");
+                map.put("Accept", "*/*");
                 JSONObject jsonObject = new JSONObject(map);
                 // 参数：[请求方式][请求链接][请求参数][成功回调][失败回调]
                 JsonObjectRequest mStringRequest = new JsonObjectRequest(
-                        Request.Method.POST,
+                        Request.Method.GET,
                         url,
                         jsonObject,
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                int status  =-2;
-                                String str ="1";
-                                try {
-                                    status = response.getInt("status");
-                                    str = response.getString("msg");
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                                if(status ==1){
-                                    ToastUtils.makeShortText("ss",getActivity());
-                                }
-                                ToastUtils.makeShortText(str,getActivity());
-
-
-
+                                ToastUtils.makeShortText(response.toString(), getActivity());
+                                FenceInfo fenceInfo = LocationToJson.getPojo(response.toString(), FenceInfo.class);
+//                                EventBus.getDefault().post(fenceInfo);
                             }
                         },
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                               ToastUtils.makeShortText("err",getActivity());
+                                ToastUtils.makeShortText(error.toString(), getActivity());
+
                             }
                         }
                 ){
@@ -521,7 +525,7 @@ public class DeviceFragment extends DeviceBaseFragment {
 
                 mStringRequest.setRetryPolicy(new DefaultRetryPolicy(
                         20 * 1000, 3, 1.0f));
-                mStringRequest.setTag("bind");// 设置标签
+                mStringRequest.setTag("getfence");// 设置标签
                 AppContext.getRequestQueue().add(mStringRequest);// 将请求添加进队列
                 break;
         }

@@ -285,6 +285,7 @@ public class SdkEventController {
 
                         }else if(status ==0){
                             onDidGetAllDevice(ErrorCode.CODE_GET_ALL_FAIL,null);
+
                         }
 
                     }
@@ -292,7 +293,8 @@ public class SdkEventController {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        onDidGetAllDevice(ErrorCode.CODE_SERVER_ERROR,null);
+//                        onDidGetAllDevice(ErrorCode.CODE_SERVER_ERROR,null);
+                        onDidRequestError(error.toString());
                     }
                 }
         ){
@@ -348,16 +350,20 @@ public class SdkEventController {
         deviceControllerListener.DidUpdateDevice(errorcode);
     }
 
+    protected void onDidRequestError(String errormessage) {
+        deviceControllerListener.DidRequestError(errormessage);
+    }
+
 
     //Fence
     public void getfencestate(String deviceid) {
-        String url =   Config.HTTPSERVER+"/api/getRail";
+        String url = Config.HTTPSERVER + "/api/getRail?deviceId=" + deviceid;
         Map<String, String>map = new HashMap<>();
         map.put("deviceid",deviceid);
         JSONObject jsonObject = new JSONObject(map);
         // 参数：[请求方式][请求链接][请求参数][成功回调][失败回调]
         JsonObjectRequest mStringRequest = new JsonObjectRequest(
-                Request.Method.POST,
+                Request.Method.GET,
                 url,
                 jsonObject,
                 new Response.Listener<JSONObject>() {
@@ -384,8 +390,8 @@ public class SdkEventController {
         };
 
         mStringRequest.setRetryPolicy(new DefaultRetryPolicy(
-                20 * 1000, 1, 1.0f));
-        mStringRequest.setTag("123");// 设置标签
+                20 * 1000, 3, 1.0f));
+        mStringRequest.setTag("getfence");// 设置标签
         AppContext.getRequestQueue().add(mStringRequest);// 将请求添加进队列
 
     }
@@ -409,7 +415,7 @@ public class SdkEventController {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        int status = 0;
+                        int status = -2;
                         try {
                             status = response.getInt("status");
                         } catch (JSONException e) {

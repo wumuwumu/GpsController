@@ -5,7 +5,10 @@ package com.sciento.wumu.gpscontroller.Event;
  */
 
 public class DeviceConnected {
-    String deviceId;
+
+
+    String clientid;
+    ;
     String ipaddress;
     String username;
     Boolean session;
@@ -14,12 +17,12 @@ public class DeviceConnected {
     long ts;
 
 
-    public String getDeviceId() {
-        return deviceId;
+    public String getClientid() {
+        return clientid;
     }
 
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
+    public void setClientid(String clientid) {
+        this.clientid = clientid;
     }
 
     public String getIpaddress() {

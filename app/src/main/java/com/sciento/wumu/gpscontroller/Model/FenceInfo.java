@@ -10,7 +10,7 @@ public class FenceInfo {
     private String state ;
     private String msg;
     private String referer;
-    private Fence result;
+    private FenceQueryParam result;
 
     public int getStatus() {
         return status;
@@ -44,11 +44,11 @@ public class FenceInfo {
         this.referer = referer;
     }
 
-    public Fence getResult() {
+    public FenceQueryParam getResult() {
         return result;
     }
 
-    public void setResult(Fence result) {
+    public void setResult(FenceQueryParam result) {
         this.result = result;
     }
 

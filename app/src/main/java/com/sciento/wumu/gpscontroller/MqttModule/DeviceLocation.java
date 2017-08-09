@@ -34,33 +34,10 @@ public class DeviceLocation {
 
     private static DeviceLocation deviceLocation = new DeviceLocation();
     private static boolean isConnected = false;
-    private MqttAndroidClient mqttAndroidClient;
-    private IMqttToken token;
-
     private final String TAG ="MqttConnect";
     private final int MAG_DIS_TO_CONN = 903;
-
-    private DeviceLocation(){
-       mqttAndroidClient =  new MqttAndroidClient(AppContext.getContext(), Config.MQTTSERVER,
-               UserState.username);
-    }
-
-    public static synchronized DeviceLocation getInstance()
-    {
-        return deviceLocation;
-    }
-    Handler connectHandler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what){
-                case MAG_DIS_TO_CONN:
-                    connect();
-                    break;
-            }
-            super.handleMessage(msg);
-        }
-    };
-
+    private MqttAndroidClient mqttAndroidClient;
+    private IMqttToken token;
     private IMqttActionListener iMqttActionListener = new IMqttActionListener() {
         @Override
         public void onSuccess(IMqttToken asyncActionToken) {
@@ -86,8 +63,6 @@ public class DeviceLocation {
 
         }
     };
-
-
     private MqttCallback mqttCallback = new MqttCallback() {
         @Override
         public void connectionLost(Throwable cause) {
@@ -96,6 +71,7 @@ public class DeviceLocation {
 
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
+            EventBus.getDefault().post(message);
             if(topic.matches("^topic://.*/.*/.*$")) {
                 String[] topicUpArray = topic.split("/");
                 if (topicUpArray.length == 5) {
@@ -117,16 +93,14 @@ public class DeviceLocation {
                 if(topicConArray.length == 6){
                     DeviceConnected deviceConnected = LocationToJson
                             .getPojo(message.toString(), DeviceConnected.class);
-                    deviceConnected.setDeviceId(topicConArray[4]);
                     EventBus.getDefault().post(deviceConnected);
                 }
             }else  if(topic.matches(".*/disconnected")){
                 String[] topicConArray = topic.split("/");
                 if(topicConArray.length == 6){
-                    DeviceDisconnect deviceConnected = LocationToJson
+                    DeviceDisconnect deviceDisconnect = LocationToJson
                             .getPojo(message.toString(), DeviceDisconnect.class);
-                    deviceConnected.setDeviceId(topicConArray[4]);
-                    EventBus.getDefault().post(deviceConnected);
+                    EventBus.getDefault().post(deviceDisconnect);
                 }
             }
         }
@@ -136,6 +110,26 @@ public class DeviceLocation {
 
         }
     };
+    Handler connectHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MAG_DIS_TO_CONN:
+                    connect();
+                    break;
+            }
+            super.handleMessage(msg);
+        }
+    };
+
+    private DeviceLocation() {
+        mqttAndroidClient = new MqttAndroidClient(AppContext.getContext(), Config.MQTTSERVER,
+                UserState.username);
+    }
+
+    public static synchronized DeviceLocation getInstance() {
+        return deviceLocation;
+    }
 
     public void connect()
     {

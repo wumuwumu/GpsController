@@ -74,7 +74,15 @@
     <string name="str_set_fence">设置围栏</string>
 
     <string name="str_set_fence_fail">设置围栏失败</string>
+    <string name="str_link_setver_fail">连接服务器失败</string>
     <string name="str_set_fence_success">设置围栏成功</string>
+    <string name="str_cancel_fence_success">取消围栏成功</string>
+    <string name="str_cancel_fence_fail">取消围栏失败</string>
+    <string name="str_not_get_location">没有获得位置</string>
+
+    <string name="str_alarm">警告</string>
+    <string name="str_device_name">设备名</string>
+    <string name="str_show_alarm">出现警告</string>
 
 
 </resources>

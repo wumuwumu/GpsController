@@ -33,7 +33,12 @@ public class DeviceBaseFragment extends BaseFragment{
 
         @Override
         public void DidUpdateDevice(int errorcode) {
-            DidUpdateDevice(errorcode);
+            DeviceBaseFragment.this.DidUpdataDevice(errorcode);
+        }
+
+        @Override
+        public void DidRequestError(String errormessage) {
+            DeviceBaseFragment.this.DidRequestError(errormessage);
         }
     };
 
@@ -50,6 +55,9 @@ public class DeviceBaseFragment extends BaseFragment{
     public void DidUnbindDevice(int errorcode){}
 
     public void DidUpdataDevice(int errorcode){}
+
+    public void DidRequestError(String errormessage) {
+    }
 
 
 
