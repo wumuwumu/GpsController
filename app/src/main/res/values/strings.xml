@@ -45,6 +45,8 @@
     <string name="str_register_success">注册成功</string>
     <string name="str_register_fail">注册失败</string>
     <string name="str_link_server_fail">连接服务器失败</string>
+    <string name="str_logout">退出登录</string>
+    <string name="str_logout_fail">登录失败</string>
 
     <!--忘记密码-->
     <string name="str_reset_passwd">重置密码</string>
@@ -84,5 +86,8 @@
     <string name="str_device_name">设备名</string>
     <string name="str_show_alarm">出现警告</string>
 
+
+    <!--pop-->
+    <string name="str_close_windows">关闭窗口</string>
 
 </resources>

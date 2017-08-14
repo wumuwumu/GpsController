@@ -43,6 +43,7 @@ import com.sciento.wumu.gpscontroller.DeviceSdk.ErrorCode;
 import com.sciento.wumu.gpscontroller.Event.Alarm;
 import com.sciento.wumu.gpscontroller.Event.DeviceConnected;
 import com.sciento.wumu.gpscontroller.Event.DeviceDisconnect;
+import com.sciento.wumu.gpscontroller.Event.UnbindDevice;
 import com.sciento.wumu.gpscontroller.Model.FenceInfo;
 import com.sciento.wumu.gpscontroller.Model.JsonDevice;
 import com.sciento.wumu.gpscontroller.MqttModule.CurrentLocation;
@@ -159,6 +160,7 @@ public class DeviceFragment extends DeviceBaseFragment {
                             DeviceBaseFragment.deviceslist.get(i).setSubscribe(false);
                         }
                     }
+                    EventBus.getDefault().post(new UnbindDevice(msg.obj.toString()));
                     DeviceController.getInstance().unBindDevice(userphone,token,msg.obj.toString());
 
                     break;

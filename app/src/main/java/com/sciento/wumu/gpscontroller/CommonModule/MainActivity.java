@@ -18,21 +18,17 @@ import com.sciento.wumu.gpscontroller.adapter.ViewPagerAdapter;
 
 public class MainActivity extends DeviceModuleBaseActivity {
 
+    private static final String TAG = "MainActivity";
+    private static final int REQUEST_CODE_SETTING = 100;
    Context context = null;
-
-    private BottomNavigationView bottomNavigationView;
-    private NoScrollViewPager noScrollViewPager;
-
     //Fragment
     HomeFragment homeFragment = null;
     PersonFragment personFragment =null;
     DeviceFragment deviceFragment =null;
     ShowInfoFragment showInfoFragment = null;
     MenuItem prevMenuItem =null;
-
-    private static final String TAG = "MainActivity";
-    private static final  int REQUEST_CODE_SETTING = 100;
-
+    private BottomNavigationView bottomNavigationView;
+    private NoScrollViewPager noScrollViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,11 +104,11 @@ public class MainActivity extends DeviceModuleBaseActivity {
         homeFragment = HomeFragment.newInstance();
         deviceFragment = DeviceFragment.newInstance();
         personFragment = PersonFragment.newInstance();
-        showInfoFragment = ShowInfoFragment.newInstance();
+//        showInfoFragment = ShowInfoFragment.newInstance();
         viewPagerAdapter.addFragment(homeFragment);
         viewPagerAdapter.addFragment(deviceFragment);
-        viewPagerAdapter.addFragment(showInfoFragment);
-//        viewPagerAdapter.addFragment(personFragment);
+//        viewPagerAdapter.addFragment(showInfoFragment);
+        viewPagerAdapter.addFragment(personFragment);
         viewPager.setOffscreenPageLimit(2);
         viewPager.setAdapter(viewPagerAdapter);
 

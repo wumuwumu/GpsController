@@ -207,6 +207,57 @@ public class UserNetworkConn {
     }
 
 
+    public void logoutUser(final Handler handler) {
+        JSONObject jsonObject = new JSONObject();// 将 Map 转为 JsonObject 的参数
+        String url = Config.HTTPSERVER + "/api/logout";
+        // 参数：[请求方式][请求链接][请求参数][成功回调][失败回调]
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                url,
+                jsonObject,
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        int code = -2;
+                        String reponseMsg = null;
+                        try {
+                            code = response.getInt("status");
+                            reponseMsg = response.getString("msg");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        if (code == 1) {
+                            Message msg = Message.obtain();
+                            msg.what = UserStateCode.USER_SUCCESS;
+                            msg.obj = reponseMsg;
+                            handler.sendMessage(msg);
+                        } else if (code == 0) {
+                            Message msg = Message.obtain();
+                            msg.what = UserStateCode.USER_LOGOUT_FAIL;
+                            msg.obj = reponseMsg;
+                            handler.sendMessage(msg);
+                        }
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Message msg = Message.obtain();
+                        msg.what = UserStateCode.USER_LINK_SERVER_FAIL;
+                        handler.sendMessage(msg);
+
+                    }
+                });
+
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                20 * 1000, 1, 1.0f));
+        jsonObjectRequest.setTag("logout");// 设置标签
+        AppContext.getRequestQueue().add(jsonObjectRequest);// 将请求添加进队列
+    }
+
+
 
 
 

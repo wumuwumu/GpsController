@@ -1,5 +1,6 @@
 package com.sciento.wumu.gpscontroller.HomeModule;
 
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,28 +9,37 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.Toast;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 
-import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
-import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.LocationSource;
-import com.amap.api.maps.MapView;
 import com.amap.api.maps.TextureMapView;
 import com.amap.api.maps.UiSettings;
 import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.CircleOptions;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.MyLocationStyle;
-import com.sciento.wumu.gpscontroller.ConfigModule.Config;
+import com.sciento.wumu.gpscontroller.ControllerModule.FenceActivity;
+import com.sciento.wumu.gpscontroller.DeviceModule.DeviceBaseFragment;
+import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceController;
+import com.sciento.wumu.gpscontroller.DeviceSdk.FenceListener;
+import com.sciento.wumu.gpscontroller.Event.UnbindDevice;
+import com.sciento.wumu.gpscontroller.Model.DeviceState;
+import com.sciento.wumu.gpscontroller.Model.Fence;
+import com.sciento.wumu.gpscontroller.Model.FenceInfo;
+import com.sciento.wumu.gpscontroller.Model.SendFenceBean;
 import com.sciento.wumu.gpscontroller.MqttModule.CurrentLocation;
 import com.sciento.wumu.gpscontroller.MqttModule.DeviceLocation;
 import com.sciento.wumu.gpscontroller.MqttModule.LocationToJson;
 import com.sciento.wumu.gpscontroller.R;
+import com.sciento.wumu.gpscontroller.Utils.ProgressDialogUtils;
+import com.sciento.wumu.gpscontroller.Utils.ToastUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -43,32 +53,99 @@ import butterknife.Unbinder;
 
 
 public class HomeFragment extends Fragment implements
-        AMap.OnMyLocationChangeListener
-{
+        AMap.OnMyLocationChangeListener {
 
 
+    private final int MSG_UPDATE_ALARM_BTN = 623;
+    private final int MSG_GET_FENCE_STATE = 624;
     @BindView(R.id.main_mapview)
     TextureMapView mainMapview;
     Unbinder unbinder;
+    @BindView(R.id.et_fence_value)
+    EditText etFenceValue;
+    @BindView(R.id.btn_control_fence)
+    Button btnControlFence;
+    @BindView(R.id.ll_device_controller)
+    LinearLayout llDeviceController;
+    @BindView(R.id.btn_control_alarm)
+    Button btnControlAlarm;
+    @BindView(R.id.btn_close_windows)
+    Button btnCloseWindows;
+    boolean enswitch;
+    String deviceId;
+    Fence fence = null;
+    Handler homeHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_UPDATE_ALARM_BTN:
+                    for (int i = 0; i < DeviceBaseFragment.deviceslist.size(); i++) {
+                        if (DeviceBaseFragment.deviceslist.get(i).getJsonDevice().getId().equals(deviceId)) {
+                            enswitch = DeviceBaseFragment.deviceslist.get(i).getJsonDevice().isPower();
+                            if (!enswitch) {
+                                btnControlAlarm.setText(getString(R.string.str_close));
 
+                            } else {
+                                btnControlAlarm.setText(getString(R.string.str_open));
+                            }
+                        }
+                    }
+                    break;
 
-
-    private AMap mainAmap =null;
+                case MSG_GET_FENCE_STATE:
+                    DeviceController.getInstance().getfencestate(deviceId);
+                    break;
+            }
+            super.handleMessage(msg);
+        }
+    };
+    private AMap mainAmap = null;
     private UiSettings mUiSettings;
     private LocationSource.OnLocationChangedListener mLocationChangedListener;
     private AMapLocationClient mlocationClient;
     private AMapLocationClientOption mLocationOption;
-
-    private HashMap<String,Marker> deviceMap = new HashMap<>();
-
-
-    Handler homeHandler = new Handler(){
+    private HashMap<String, Marker> deviceMap = new HashMap<>();
+    private HashMap<String, CurrentLocation> deviceCurrentLocation = new HashMap<>();
+    private boolean enopen = false;
+    FenceListener fenceListener = new FenceListener() {
         @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what){
+        public void didSendFence(int sataus) {
+            ProgressDialogUtils.getInstance().dismiss();
+            switch (sataus) {
+                case -1:
+                    ToastUtils.makeShortText(getString(R.string.str_link_setver_fail), getActivity());
+                    break;
+                case 0:
+                    ToastUtils.makeShortText(getString(R.string.str_set_fence_fail), getActivity());
+                    break;
+                case 1:
+                    ToastUtils.makeShortText(getString(R.string.str_set_fence_success), getActivity());
+                    etFenceValue.setEnabled(false);
+                    enopen = true;
+                    btnControlFence.setText(R.string.str_close);
 
             }
-            super.handleMessage(msg);
+
+        }
+    };
+    FenceListener fenceCancelListener = new FenceListener() {
+        @Override
+        public void didSendFence(int sataus) {
+            ProgressDialogUtils.getInstance().dismiss();
+            switch (sataus) {
+                case -1:
+                    ToastUtils.makeShortText(getString(R.string.str_link_setver_fail), getActivity());
+                    break;
+                case 0:
+                    ToastUtils.makeShortText(getString(R.string.str_cancel_fence_fail), getActivity());
+                    break;
+                case 1:
+                    ToastUtils.makeShortText(getString(R.string.str_cancel_fence_success), getActivity());
+                    etFenceValue.setEnabled(true);
+                    enopen = false;
+                    btnControlFence.setText(R.string.str_open);
+            }
+
         }
     };
 
@@ -98,7 +175,7 @@ public class HomeFragment extends Fragment implements
     }
 
     private void init() {
-        if(mainAmap == null) {
+        if (mainAmap == null) {
             mainAmap = mainMapview.getMap();
             mUiSettings = mainAmap.getUiSettings();
         }
@@ -114,21 +191,148 @@ public class HomeFragment extends Fragment implements
         mainAmap.setMyLocationEnabled(true);// 设置为true表示启动显示定位蓝点，false表示隐藏定位蓝点并不进行定位，默认是false。
         mainAmap.setOnMyLocationChangeListener(this);
 
+        llDeviceController.setVisibility(View.GONE);
 
     }
 
 
-
     private void initEvent() {
+        mainAmap.setOnMarkerClickListener(new AMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                deviceId = marker.getTitle();
+                homeHandler.sendEmptyMessage(MSG_UPDATE_ALARM_BTN);
+                homeHandler.sendEmptyMessage(MSG_GET_FENCE_STATE);
+                llDeviceController.setVisibility(View.VISIBLE);
+
+
+                return false;
+            }
+        });
+
+        btnControlAlarm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (enswitch) {
+                    btnControlAlarm.setText(getString(R.string.str_close));
+                    enswitch = false;
+
+                } else {
+                    btnControlAlarm.setText(getString(R.string.str_open));
+                    enswitch = true;
+                }
+                DeviceState deviceState = new DeviceState();
+                deviceState.setPower(enswitch);
+                deviceState.setDeviceId(deviceId);
+                DeviceLocation.getInstance().sendRetainMessage("topic://" + deviceId + "/down/power",
+                        LocationToJson.getStateJson(deviceState));
+            }
+
+        });
+        btnCloseWindows.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                llDeviceController.setVisibility(View.GONE);
+            }
+        });
+        btnControlFence.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!enopen) {
+                    ProgressDialogUtils.getInstance().show(getActivity(), R.string.str_set_fence);
+                    String radis = etFenceValue.getText().toString();
+                    int mradis = 0;
+                    try {
+                        if (radis.matches("[0-9]*")) {
+                            mradis = Integer.parseInt(radis);
+                        } else {
+                            ToastUtils.makeShortText(getString(R.string.str_is_not_num), getActivity());
+                            return;
+
+                        }
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                        ToastUtils.makeShortText(getString(R.string.str_is_not_num), getActivity());
+                        return;
+                    }
+                    LatLng fenceLaLng = null;
+                    if (deviceCurrentLocation.get(deviceId) != null) {
+                        fenceLaLng = new LatLng(deviceCurrentLocation.get(deviceId).getLatitude(), deviceCurrentLocation.get(deviceId).getLongitude());
+                    } else {
+                        ToastUtils.makeShortText(getString(R.string.str_not_get_location), getActivity());
+                        return;
+                    }
+                    drawCircle(fenceLaLng, mradis);
+                    SendFenceBean sendFence = new SendFenceBean();
+                    sendFence.setId(deviceId);
+                    sendFence.setLatitude(fenceLaLng.latitude);
+                    sendFence.setLongitude(fenceLaLng.longitude);
+                    sendFence.setRadius((double) mradis);
+                    sendFence.setState(true);
+                    DeviceController.getInstance().sendFenceInfo(sendFence, fenceListener);
+
+                } else {
+                    LatLng fenceLaLng = null;
+                    if (deviceCurrentLocation.get(deviceId) != null) {
+                        fenceLaLng = new LatLng(deviceCurrentLocation.get(deviceId).getLatitude(), deviceCurrentLocation.get(deviceId).getLongitude());
+                    } else {
+                        ToastUtils.makeShortText(getString(R.string.str_not_get_location), getActivity());
+                        return;
+                    }
+                    SendFenceBean sendFence = new SendFenceBean();
+                    sendFence.setId(deviceId);
+                    sendFence.setLatitude(fenceLaLng.latitude);
+                    sendFence.setLongitude(fenceLaLng.longitude);
+                    sendFence.setRadius((double) 10);
+                    sendFence.setState(false);
+                    DeviceController.getInstance().sendFenceInfo(sendFence, fenceCancelListener);
+                }
+            }
+        });
+    }
+
+    @Subscribe
+    public void getFence(FenceInfo fenceinfo) {
+//        ToastUtils.makeShortText("dddd",FenceActivity.this);
+        if (fenceinfo.getResult().getQueryParam() == null) {
+            btnControlFence.setText(getString(R.string.str_close));
+            enopen = false;
+        } else {
+            if (fenceinfo.getResult().getQueryParam().getId().equals(deviceId)) {
+                if (fenceinfo.getStatus() == 1) {
+                    fence = fenceinfo.getResult().getQueryParam();
+                    if (fence.isState()) {
+                        etFenceValue.setText(((int) (double) fence.getRadius()) + "");
+                        drawCircle(new LatLng(fence.getLatitude(), fence.getLongitude()), (int) (double) fence.getRadius());
+                        etFenceValue.setEnabled(false);
+                        btnControlFence.setText(getString(R.string.str_open));
+                        enopen = true;
+                    } else {
+                        btnControlFence.setText(getString(R.string.str_close));
+                        enopen = false;
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void drawCircle(LatLng latlng, int raduis) {
+        mainAmap.addCircle(new CircleOptions().
+                center(latlng).
+                radius(1000).
+                fillColor(Color.argb(50, 1, 1, 1)).
+                strokeColor(Color.argb(50, 1, 1, 1)).
+                strokeWidth(15));
 
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void updateLocation(CurrentLocation currentLocation){
+    public void updateLocation(CurrentLocation currentLocation) {
         LatLng latlng = new LatLng(currentLocation.getLatitude()
                 , currentLocation.getLongitude());
 
-        if(deviceMap.get(currentLocation.getDeviceId()) == null){
+        if (deviceMap.get(currentLocation.getDeviceId()) == null) {
             MarkerOptions markerOption = new MarkerOptions().icon(BitmapDescriptorFactory
                     .fromResource(R.drawable.icon_car))
                     .position(latlng)
@@ -136,13 +340,26 @@ public class HomeFragment extends Fragment implements
 
             Marker marker = mainAmap.addMarker(markerOption);
             marker.setRotateAngle(currentLocation.getBearing());
-            deviceMap.put(currentLocation.getDeviceId(),marker);
+            marker.setTitle(currentLocation.getDeviceId());
+            deviceMap.put(currentLocation.getDeviceId(), marker);
 
-        }else {
+        } else {
             deviceMap.get(currentLocation.getDeviceId()).setPosition(latlng);
             deviceMap.get(currentLocation.getDeviceId()).setRotateAngle(currentLocation.getBearing());
         }
 
+        deviceCurrentLocation.put(currentLocation.getDeviceId(), currentLocation);
+
+
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void unbindDeivce(UnbindDevice unbindDevice) {
+        String deviceId = unbindDevice.getDeviceId();
+        for (int i = 0; i < deviceMap.size(); i++) {
+            deviceMap.get(deviceId).destroy();
+            deviceMap.remove(deviceId);
+        }
     }
 
 
@@ -185,8 +402,6 @@ public class HomeFragment extends Fragment implements
     public void onMyLocationChange(Location location) {
 //        DeviceLocation.getInstance().sendLocation(Config.TOPICSEND,LocationToJson.getJson(location));
     }
-
-
 
 
 }

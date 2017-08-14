@@ -27,4 +27,8 @@ public class UserStateCode {
 
     //forget
     public static final int USER_FORGET_FAIL = 300;
+
+    //logout
+    public static final int USER_LOGOUT_FAIL = 301;
+
 }

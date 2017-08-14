@@ -83,6 +83,10 @@ public class DeviceLocation {
                         } else if (topicUpArray[4].equals("alarm")) {
                             Alarm alarm = LocationToJson.getPojo(message.toString(), Alarm.class);
                             EventBus.getDefault().post(alarm);
+                        } else if (topicUpArray[4].equals("will")) {
+                            DeviceDisconnect deviceDisconnect = new DeviceDisconnect();
+                            deviceDisconnect.setClientid(topicUpArray[2]);
+                            EventBus.getDefault().post(deviceDisconnect);
                         }
 
                     }
