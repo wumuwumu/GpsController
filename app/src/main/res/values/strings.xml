@@ -46,7 +46,7 @@
     <string name="str_register_fail">注册失败</string>
     <string name="str_link_server_fail">连接服务器失败</string>
     <string name="str_logout">退出登录</string>
-    <string name="str_logout_fail">登录失败</string>
+    <string name="str_logout_fail">退出登录失败</string>
 
     <!--忘记密码-->
     <string name="str_reset_passwd">重置密码</string>

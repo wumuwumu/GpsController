@@ -3,6 +3,7 @@ package com.sciento.wumu.gpscontroller.UserModule;
 import android.os.Handler;
 import android.os.Message;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
@@ -17,6 +18,7 @@ import com.sciento.wumu.gpscontroller.ConfigModule.UserState;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -249,7 +251,14 @@ public class UserNetworkConn {
                         handler.sendMessage(msg);
 
                     }
-                });
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Cookie", UserState.referer);
+                return params;
+            }
+        };
 
         jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
                 20 * 1000, 1, 1.0f));

@@ -20,6 +20,7 @@ import com.amap.api.maps.LocationSource;
 import com.amap.api.maps.TextureMapView;
 import com.amap.api.maps.UiSettings;
 import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.Circle;
 import com.amap.api.maps.model.CircleOptions;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
@@ -106,6 +107,7 @@ public class HomeFragment extends Fragment implements
     private AMapLocationClientOption mLocationOption;
     private HashMap<String, Marker> deviceMap = new HashMap<>();
     private HashMap<String, CurrentLocation> deviceCurrentLocation = new HashMap<>();
+    private HashMap<String, Circle> deviceCircle = new HashMap<>();
     private boolean enopen = false;
     FenceListener fenceListener = new FenceListener() {
         @Override
@@ -247,12 +249,14 @@ public class HomeFragment extends Fragment implements
                             mradis = Integer.parseInt(radis);
                         } else {
                             ToastUtils.makeShortText(getString(R.string.str_is_not_num), getActivity());
+                            ProgressDialogUtils.getInstance().dismiss();
                             return;
 
                         }
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
                         ToastUtils.makeShortText(getString(R.string.str_is_not_num), getActivity());
+                        ProgressDialogUtils.getInstance().dismiss();
                         return;
                     }
                     LatLng fenceLaLng = null;
@@ -260,9 +264,16 @@ public class HomeFragment extends Fragment implements
                         fenceLaLng = new LatLng(deviceCurrentLocation.get(deviceId).getLatitude(), deviceCurrentLocation.get(deviceId).getLongitude());
                     } else {
                         ToastUtils.makeShortText(getString(R.string.str_not_get_location), getActivity());
+                        ProgressDialogUtils.getInstance().dismiss();
                         return;
                     }
-                    drawCircle(fenceLaLng, mradis);
+                    if (deviceCircle.get(fence.getId()) == null) {
+                        Circle circle = drawCircle(fenceLaLng, mradis);
+                        deviceCircle.put(fence.getId(), circle);
+                    } else {
+                        deviceCircle.get(fence.getId()).setRadius(mradis);
+                        deviceCircle.get(fence.getId()).setCenter(fenceLaLng);
+                    }
                     SendFenceBean sendFence = new SendFenceBean();
                     sendFence.setId(deviceId);
                     sendFence.setLatitude(fenceLaLng.latitude);
@@ -272,17 +283,14 @@ public class HomeFragment extends Fragment implements
                     DeviceController.getInstance().sendFenceInfo(sendFence, fenceListener);
 
                 } else {
-                    LatLng fenceLaLng = null;
+                    LatLng fenceLaLng = new LatLng(23, 110);
                     if (deviceCurrentLocation.get(deviceId) != null) {
                         fenceLaLng = new LatLng(deviceCurrentLocation.get(deviceId).getLatitude(), deviceCurrentLocation.get(deviceId).getLongitude());
-                    } else {
-                        ToastUtils.makeShortText(getString(R.string.str_not_get_location), getActivity());
-                        return;
                     }
                     SendFenceBean sendFence = new SendFenceBean();
                     sendFence.setId(deviceId);
                     sendFence.setLatitude(fenceLaLng.latitude);
-                    sendFence.setLongitude(fenceLaLng.longitude);
+                    sendFence.setLongitude(fenceLaLng.latitude);
                     sendFence.setRadius((double) 10);
                     sendFence.setState(false);
                     DeviceController.getInstance().sendFenceInfo(sendFence, fenceCancelListener);
@@ -303,12 +311,21 @@ public class HomeFragment extends Fragment implements
                     fence = fenceinfo.getResult().getQueryParam();
                     if (fence.isState()) {
                         etFenceValue.setText(((int) (double) fence.getRadius()) + "");
-                        drawCircle(new LatLng(fence.getLatitude(), fence.getLongitude()), (int) (double) fence.getRadius());
+                        if (deviceCircle.get(fence.getId()) == null) {
+                            Circle circle = drawCircle(new LatLng(fence.getLatitude(),
+                                    fence.getLongitude()), (int) (double) fence.getRadius());
+                            deviceCircle.put(fence.getId(), circle);
+                        } else {
+                            deviceCircle.get(fence.getId()).setRadius(fence.getRadius().intValue());
+                            deviceCircle.get(fence.getId()).setCenter(new LatLng(fence.getLatitude(),
+                                    fence.getLongitude()));
+                        }
                         etFenceValue.setEnabled(false);
-                        btnControlFence.setText(getString(R.string.str_open));
+                        btnControlFence.setText(getString(R.string.str_close));
                         enopen = true;
                     } else {
-                        btnControlFence.setText(getString(R.string.str_close));
+                        btnControlFence.setText(getString(R.string.str_open));
+                        etFenceValue.setEnabled(true);
                         enopen = false;
                     }
                 }
@@ -317,10 +334,10 @@ public class HomeFragment extends Fragment implements
 
     }
 
-    private void drawCircle(LatLng latlng, int raduis) {
-        mainAmap.addCircle(new CircleOptions().
+    private Circle drawCircle(LatLng latlng, int raduis) {
+        return mainAmap.addCircle(new CircleOptions().
                 center(latlng).
-                radius(1000).
+                radius(raduis).
                 fillColor(Color.argb(50, 1, 1, 1)).
                 strokeColor(Color.argb(50, 1, 1, 1)).
                 strokeWidth(15));
@@ -331,24 +348,24 @@ public class HomeFragment extends Fragment implements
     public void updateLocation(CurrentLocation currentLocation) {
         LatLng latlng = new LatLng(currentLocation.getLatitude()
                 , currentLocation.getLongitude());
-
+        deviceCurrentLocation.put(currentLocation.getDeviceId(), currentLocation);
         if (deviceMap.get(currentLocation.getDeviceId()) == null) {
             MarkerOptions markerOption = new MarkerOptions().icon(BitmapDescriptorFactory
                     .fromResource(R.drawable.icon_car))
                     .position(latlng)
-                    .draggable(true);
+                    .draggable(true)
+                    .title(currentLocation.getDeviceId())
+                    .rotateAngle(currentLocation.getBearing());
+
 
             Marker marker = mainAmap.addMarker(markerOption);
-            marker.setRotateAngle(currentLocation.getBearing());
-            marker.setTitle(currentLocation.getDeviceId());
             deviceMap.put(currentLocation.getDeviceId(), marker);
 
         } else {
             deviceMap.get(currentLocation.getDeviceId()).setPosition(latlng);
             deviceMap.get(currentLocation.getDeviceId()).setRotateAngle(currentLocation.getBearing());
+            deviceMap.get(currentLocation.getDeviceId()).setTitle(currentLocation.getDeviceId());
         }
-
-        deviceCurrentLocation.put(currentLocation.getDeviceId(), currentLocation);
 
 
     }
@@ -358,6 +375,11 @@ public class HomeFragment extends Fragment implements
         String deviceId = unbindDevice.getDeviceId();
         for (int i = 0; i < deviceMap.size(); i++) {
             deviceMap.get(deviceId).destroy();
+            deviceMap.remove(deviceId);
+
+        }
+        for (int j = 0; j < deviceCircle.size(); j++) {
+            deviceCircle.get(deviceId).remove();
             deviceMap.remove(deviceId);
         }
     }

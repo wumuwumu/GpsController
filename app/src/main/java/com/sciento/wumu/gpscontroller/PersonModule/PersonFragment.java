@@ -1,6 +1,7 @@
 package com.sciento.wumu.gpscontroller.PersonModule;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -22,6 +23,8 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
+import static android.content.Context.MODE_PRIVATE;
+
 
 public class PersonFragment extends Fragment {
 
@@ -39,10 +42,21 @@ public class PersonFragment extends Fragment {
                     break;
                 case UserStateCode.USER_SUCCESS:
                     Intent logoutInent = new Intent(getActivity(), UserLoginActivity.class);
+                    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("gps", MODE_PRIVATE);
+                    //得到SharedPreferences.Editor对象，并保存数据到该对象中
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.remove("phone");
+                    editor.remove("passwd");
+                    editor.remove("remember");
+                    editor.commit();
                     startActivity(logoutInent);
+                    getActivity().finish();
                     break;
                 case UserStateCode.USER_LOGOUT_FAIL:
                     ToastUtils.makeShortText(getString(R.string.str_logout_fail), getActivity());
+                    break;
+                case UserStateCode.USER_LINK_SERVER_FAIL:
+                    ToastUtils.makeShortText(getString(R.string.str_link_server_fail), getActivity());
                     break;
             }
             super.handleMessage(msg);

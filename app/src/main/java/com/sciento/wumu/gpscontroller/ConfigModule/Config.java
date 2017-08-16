@@ -17,7 +17,8 @@ public class Config {
     public static final String MQTTNODE = "emqttd@127.0.0.1";
 
     //http
-    public static final String HTTPSERVER =  "http://192.168.0.121:8080";
+//    public static final String HTTPSERVER =  "http://192.168.0.121:8080";
+    public static final String HTTPSERVER = "http://115.28.208.164:80";
 
 
     //db
