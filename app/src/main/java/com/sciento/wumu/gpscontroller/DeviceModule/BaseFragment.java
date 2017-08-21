@@ -10,7 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.sciento.wumu.gpscontroller.DeviceSdk.ErrorCode;
+import com.sciento.wumu.gpscontroller.Event.NetworkState;
 import com.sciento.wumu.gpscontroller.R;
+
+import org.greenrobot.eventbus.Subscribe;
 
 /**
  * Created by wumu on 17-7-16.
@@ -19,11 +22,12 @@ import com.sciento.wumu.gpscontroller.R;
 public class BaseFragment extends Fragment {
 
 
+    /**
+     * 存储器默认名称
+     */
+    public static final String SPF_Name = "wumu";
     /** 存储器 */
     public SharedPreferences sharedPreferences;
-
-    /** 存储器默认名称 */
-    public static final String SPF_Name = "wumu";
 
     @Nullable
     @Override
@@ -58,4 +62,6 @@ public class BaseFragment extends Fragment {
         }
         return errorString;
     }
+
+
 }

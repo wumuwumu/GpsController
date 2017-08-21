@@ -17,6 +17,7 @@ import com.sciento.wumu.gpscontroller.ConfigModule.UserState;
 import com.sciento.wumu.gpscontroller.Model.FenceInfo;
 import com.sciento.wumu.gpscontroller.Model.SendFenceBean;
 import com.sciento.wumu.gpscontroller.Model.JsonDevice;
+import com.sciento.wumu.gpscontroller.MqttModule.DeviceLocation;
 import com.sciento.wumu.gpscontroller.MqttModule.LocationToJson;
 
 import org.greenrobot.eventbus.EventBus;
@@ -397,10 +398,10 @@ public class SdkEventController {
     }
 
 
-    public void sendFenceInfo(SendFenceBean sendFence, final FenceListener fenceListener ){
+    public void sendFenceInfo(final SendFenceBean sendFence, final FenceListener fenceListener) {
         String url =   Config.HTTPSERVER+"/api/setRail";
 
-        String strjson = LocationToJson.getFenceJson(sendFence);
+        final String strjson = LocationToJson.getFenceJson(sendFence);
         JSONObject jsonObject = null;
         try {
             jsonObject = new JSONObject(strjson);
@@ -423,6 +424,10 @@ public class SdkEventController {
                         }
 
                         fenceListener.didSendFence(status);
+                        if (status == 1) {
+                            DeviceLocation.getInstance().sendRetainMessage(
+                                    "topic://" + sendFence.getId() + "/down/fence", strjson);
+                        }
                     }
                 },
                 new Response.ErrorListener() {

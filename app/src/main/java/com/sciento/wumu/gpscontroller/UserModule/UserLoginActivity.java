@@ -53,6 +53,8 @@ import butterknife.OnClick;
  */
 public class UserLoginActivity extends AppCompatActivity {
 
+    private static final int REQUEST_CODE_SETTING = 12;
+    private static final int MSG_AUTOMATIC_LOGIN = 404;
     @BindView(R.id.tv_register)
     TextView tvRegister;
     @BindView(R.id.tv_forget_passwd)
@@ -61,36 +63,22 @@ public class UserLoginActivity extends AppCompatActivity {
     TextView tvSkip;
     @BindView(R.id.cb_remember_passwd)
     CheckBox cbRememberPasswd;
-
-
-    private static final int REQUEST_CODE_SETTING = 12;
-
-    private static final int MSG_AUTOMATIC_LOGIN = 404;
-
-
-
+    SharedPreferences sharedPreferences;
     private String phone;
     private String password;
     private boolean remember;
-
     private UserLoginTask mAuthTask = null;
-
     // UI references.
     private CleanEditText mPhoneView;
     private CleanEditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
-
-
-    SharedPreferences sharedPreferences;
-
-
     Handler loginHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             mAuthTask = null;
             showProgress(false);
-            ProgressDialogUtils.getInstance().dismiss();
+
             switch (msg.what) {
                 case UserStateCode.USER_SUCCESS:
                     UserState.issignin = true;
@@ -102,19 +90,23 @@ public class UserLoginActivity extends AppCompatActivity {
                     editor.putString("phone", phone);
                     editor.putString("passwd", password);
                     editor.putBoolean("remember",remember);
-
+                    editor.putString("referer", UserState.referer);
+                    editor.putLong("time", System.currentTimeMillis() / 1000);
                     editor.commit();
 
                     Intent intent = new Intent(UserLoginActivity.this, MainActivity.class);
                     startActivity(intent);
+                    ProgressDialogUtils.getInstance().dismiss();
                     finish();
                     break;
                 case UserStateCode.USER_SIGN_NOMATCH:
+                    ProgressDialogUtils.getInstance().dismiss();
                     mPasswordView.setError(getString(R.string.error_incorrect_password));
                     mPasswordView.requestFocus();
                     break;
 
                 case UserStateCode.REQUEST_ERROR:
+                    ProgressDialogUtils.getInstance().dismiss();
                     ToastUtils.makeShortText(getString(R.string.error_login_request), UserLoginActivity.this);
                     break;
                 case MSG_AUTOMATIC_LOGIN:
@@ -129,8 +121,6 @@ public class UserLoginActivity extends AppCompatActivity {
                         params.put("account", phone);
                         params.put("password", password);
                         remember =true;
-
-
                         UserNetworkConn.getInstance().requestServer(
                                 Request.Method.POST,
                                 Config.HTTPSERVER + "/api/login",
@@ -163,7 +153,7 @@ public class UserLoginActivity extends AppCompatActivity {
                 AndPermission.rationaleDialog(UserLoginActivity.this, arg1).show();
             }
         }).start();
-        loginHandler.sendEmptyMessage(MSG_AUTOMATIC_LOGIN);
+//        loginHandler.sendEmptyMessage(MSG_AUTOMATIC_LOGIN);
         init();
 
     }

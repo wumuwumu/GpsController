@@ -14,6 +14,9 @@ import com.sciento.wumu.gpscontroller.ConfigModule.UserState;
 import com.sciento.wumu.gpscontroller.Event.Alarm;
 import com.sciento.wumu.gpscontroller.Event.DeviceConnected;
 import com.sciento.wumu.gpscontroller.Event.DeviceDisconnect;
+import com.sciento.wumu.gpscontroller.Event.FenceAlarm;
+import com.sciento.wumu.gpscontroller.Event.FreshUi;
+import com.sciento.wumu.gpscontroller.Utils.OtherToAmap;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -45,6 +48,7 @@ public class DeviceLocation {
             isConnected = true;
             Log.d(TAG, "onSuccess");
             Toast.makeText(AppContext.getContext(),"suc",Toast.LENGTH_SHORT).show();
+            EventBus.getDefault().post(new FreshUi());
 //                    try {
 //                        DeviceLocation.getInstance().getMqttAndroidClient().subscribe(Config.TOPICSEND, 0);
 //                    } catch (MqttException e) {
@@ -79,14 +83,21 @@ public class DeviceLocation {
                         if (topicUpArray[4].equals("location")) {
                             CurrentLocation currentLocation = LocationToJson
                                     .getPojo(message.toString(), CurrentLocation.class);
+                            currentLocation.setDeviceId(topicUpArray[2]);
+                            OtherToAmap.googleTOAmap(currentLocation);
                             EventBus.getDefault().post(currentLocation);
                         } else if (topicUpArray[4].equals("alarm")) {
                             Alarm alarm = LocationToJson.getPojo(message.toString(), Alarm.class);
+                            alarm.setDeviceId(topicUpArray[2]);
                             EventBus.getDefault().post(alarm);
                         } else if (topicUpArray[4].equals("will")) {
                             DeviceDisconnect deviceDisconnect = new DeviceDisconnect();
                             deviceDisconnect.setClientid(topicUpArray[2]);
                             EventBus.getDefault().post(deviceDisconnect);
+                        } else if (topicUpArray[4].equals("fencealarm")) {
+                            FenceAlarm fenceAlarm = LocationToJson.getPojo(message.toString(), FenceAlarm.class);
+                            fenceAlarm.setDeviceid(topicUpArray[2]);
+                            EventBus.getDefault().post(fenceAlarm);
                         }
 
                     }
@@ -173,6 +184,7 @@ public class DeviceLocation {
         try {
             encodedPayload = strmessage.getBytes("UTF-8");
             MqttMessage message = new MqttMessage(encodedPayload);
+            message.setQos(1);
             message.setRetained(true);
             mqttAndroidClient.publish(topic, message);
         } catch (UnsupportedEncodingException | MqttException e) {
@@ -182,6 +194,20 @@ public class DeviceLocation {
 
     public MqttAndroidClient getMqttAndroidClient(){
         return mqttAndroidClient;
+    }
+
+    public void emptyMqttAndroidClict() {
+
+        if (mqttAndroidClient.isConnected()) {
+            try {
+                mqttAndroidClient.disconnect();
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
     }
 
 

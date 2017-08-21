@@ -84,10 +84,15 @@
 
     <string name="str_alarm">警告</string>
     <string name="str_device_name">设备名</string>
+    <string name="str_device_id">设备id</string>
+    <string name="str_out_fence">超出围栏</string>
     <string name="str_show_alarm">出现警告</string>
 
 
     <!--pop-->
     <string name="str_close_windows">关闭窗口</string>
+    <string name="str_setting_fortification">设置设防：</string>
+    <string name="str_setting_battery">设置电源：</string>
+    <string name="str_setting_fence">设置围栏:</string>
 
 </resources>

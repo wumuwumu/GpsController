@@ -16,6 +16,7 @@ import com.sciento.wumu.gpscontroller.ConfigModule.UserStateCode;
 import com.sciento.wumu.gpscontroller.R;
 import com.sciento.wumu.gpscontroller.UserModule.UserLoginActivity;
 import com.sciento.wumu.gpscontroller.UserModule.UserNetworkConn;
+import com.sciento.wumu.gpscontroller.Utils.ProgressDialogUtils;
 import com.sciento.wumu.gpscontroller.Utils.ToastUtils;
 
 import butterknife.BindView;
@@ -42,6 +43,8 @@ public class PersonFragment extends Fragment {
                     break;
                 case UserStateCode.USER_SUCCESS:
                     Intent logoutInent = new Intent(getActivity(), UserLoginActivity.class);
+                    startActivity(logoutInent);
+                    ProgressDialogUtils.getInstance().dismiss();
                     SharedPreferences sharedPreferences = getActivity().getSharedPreferences("gps", MODE_PRIVATE);
                     //得到SharedPreferences.Editor对象，并保存数据到该对象中
                     SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -49,13 +52,15 @@ public class PersonFragment extends Fragment {
                     editor.remove("passwd");
                     editor.remove("remember");
                     editor.commit();
-                    startActivity(logoutInent);
+
                     getActivity().finish();
                     break;
                 case UserStateCode.USER_LOGOUT_FAIL:
+                    ProgressDialogUtils.getInstance().dismiss();
                     ToastUtils.makeShortText(getString(R.string.str_logout_fail), getActivity());
                     break;
                 case UserStateCode.USER_LINK_SERVER_FAIL:
+                    ProgressDialogUtils.getInstance().dismiss();
                     ToastUtils.makeShortText(getString(R.string.str_link_server_fail), getActivity());
                     break;
             }
@@ -98,6 +103,7 @@ public class PersonFragment extends Fragment {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_logout:
+                ProgressDialogUtils.getInstance().show(getActivity(), R.string.str_logout);
                 UserNetworkConn.getInstance().logoutUser(personHandler);
                 break;
         }

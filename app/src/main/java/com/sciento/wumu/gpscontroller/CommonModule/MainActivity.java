@@ -10,11 +10,14 @@ import android.view.MenuItem;
 
 import com.sciento.wumu.gpscontroller.DeviceModule.DeviceFragment;
 import com.sciento.wumu.gpscontroller.HomeModule.HomeFragment;
+import com.sciento.wumu.gpscontroller.MqttModule.DeviceLocation;
 import com.sciento.wumu.gpscontroller.PersonModule.PersonFragment;
 import com.sciento.wumu.gpscontroller.R;
 import com.sciento.wumu.gpscontroller.TestModule.ShowInfoFragment;
 import com.sciento.wumu.gpscontroller.View.NoScrollViewPager;
 import com.sciento.wumu.gpscontroller.adapter.ViewPagerAdapter;
+
+import org.eclipse.paho.client.mqttv3.MqttException;
 
 public class MainActivity extends DeviceModuleBaseActivity {
 
@@ -40,7 +43,14 @@ public class MainActivity extends DeviceModuleBaseActivity {
         setupViewPager(noScrollViewPager);
 
 
+    }
 
+    @Override
+    protected void onDestroy() {
+
+        DeviceLocation.getInstance().emptyMqttAndroidClict();
+
+        super.onDestroy();
     }
 
     private void initEvent() {

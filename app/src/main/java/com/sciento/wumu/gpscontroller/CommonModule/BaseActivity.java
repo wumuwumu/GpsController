@@ -1,6 +1,7 @@
 package com.sciento.wumu.gpscontroller.CommonModule;
 
 import android.Manifest;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -9,13 +10,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.webkit.ServiceWorkerClient;
 
 import com.sciento.wumu.gpscontroller.DeviceModule.DeviceFragment;
+import com.sciento.wumu.gpscontroller.Event.FreshUi;
+import com.sciento.wumu.gpscontroller.Event.NetworkState;
 import com.sciento.wumu.gpscontroller.MqttModule.DeviceLocation;
 import com.sciento.wumu.gpscontroller.R;
+import com.sciento.wumu.gpscontroller.Service.NetworkStateService;
 import com.sciento.wumu.gpscontroller.Utils.NetworkUtils;
 import com.sciento.wumu.gpscontroller.Utils.ToastUtils;
 import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.Rationale;
 import com.yanzhenjie.permission.RationaleListener;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 /**
  * Created by wumu on 17-7-7.
@@ -36,11 +43,27 @@ class BaseActivity extends AppCompatActivity {
                     }else{
                         ToastUtils.makeShortText(getString(R.string.error_network_dis),BaseActivity.this);
                     }
+                    Intent networkIntent = new Intent(BaseActivity.this, NetworkStateService.class);
+                    startService(networkIntent);
                     break;
             }
             super.handleMessage(msg);
         }
     };
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -81,6 +104,13 @@ class BaseActivity extends AppCompatActivity {
         }).start();
 
 
+    }
+
+    @Subscribe
+    public void networkState(NetworkState networkState) {
+        if (networkState.isState()) {
+            baseHandler.sendEmptyMessage(MSG_CONNECT);
+        }
 
     }
 

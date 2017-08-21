@@ -7,21 +7,11 @@ package com.sciento.wumu.gpscontroller.Model;
 public class DeviceState {
     boolean power;
 
-    String deviceId;
-
     public boolean isPower() {
         return power;
     }
 
     public void setPower(boolean power) {
         this.power = power;
-    }
-
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
     }
 }

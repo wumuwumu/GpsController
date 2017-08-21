@@ -29,6 +29,8 @@ import butterknife.OnClick;
 
 public class UserRegisterActivity extends AppCompatActivity {
 
+    private final int MSG_STATUS = 33;
+    private final int MSG_FAIL = 34;
     @BindView(R.id.tv_mobile)
     CleanEditText tvMobile;
     @BindView(R.id.btn_send_verifi_code)
@@ -47,12 +49,6 @@ public class UserRegisterActivity extends AppCompatActivity {
     AppCompatButton btnSignup;
     @BindView(R.id.tv_link_login)
     TextView tvLinkLogin;
-
-
-    private VerifyCodeManager codeManager;
-    private final int MSG_STATUS = 33;
-    private final int MSG_FAIL = 34;
-
     Handler registerHandler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -73,6 +69,8 @@ public class UserRegisterActivity extends AppCompatActivity {
             super.handleMessage(msg);
         }
     };
+    private VerifyCodeManager codeManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -139,6 +137,7 @@ public class UserRegisterActivity extends AppCompatActivity {
                 Map<String, String> params = new HashMap<>();
                 params.put("account", tvMobile.getText().toString());
                 params.put("password", tvEnterPasswd.getText().toString());
+                params.put("phone", tvMobile.getText().toString());
                 UserNetworkConn.getInstance().registerUser(params,registerHandler);
 //                JSONObject jsonObject = new JSONObject(params);// 将 Map 转为 JsonObject 的参数
 //                String url = Config.HTTPSERVER+"/api/reg";

@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -19,7 +20,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,20 +35,24 @@ import com.sciento.wumu.gpscontroller.ConfigModule.Config;
 import com.sciento.wumu.gpscontroller.ConfigModule.UserState;
 import com.sciento.wumu.gpscontroller.ControllerModule.ControllerActivity;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeciceBean;
-import com.sciento.wumu.gpscontroller.DeviceSdk.DevicePlus;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceController;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceListAdapter;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceListener;
+import com.sciento.wumu.gpscontroller.DeviceSdk.DevicePlus;
 import com.sciento.wumu.gpscontroller.DeviceSdk.ErrorCode;
 import com.sciento.wumu.gpscontroller.Event.Alarm;
 import com.sciento.wumu.gpscontroller.Event.DeviceConnected;
 import com.sciento.wumu.gpscontroller.Event.DeviceDisconnect;
+import com.sciento.wumu.gpscontroller.Event.FenceAlarm;
+import com.sciento.wumu.gpscontroller.Event.FreshUi;
+import com.sciento.wumu.gpscontroller.Event.NetworkState;
 import com.sciento.wumu.gpscontroller.Event.UnbindDevice;
 import com.sciento.wumu.gpscontroller.Model.FenceInfo;
-import com.sciento.wumu.gpscontroller.Model.JsonDevice;
 import com.sciento.wumu.gpscontroller.MqttModule.CurrentLocation;
+import com.sciento.wumu.gpscontroller.MqttModule.DeviceLocation;
 import com.sciento.wumu.gpscontroller.MqttModule.LocationToJson;
 import com.sciento.wumu.gpscontroller.R;
+import com.sciento.wumu.gpscontroller.Utils.NetworkUtils;
 import com.sciento.wumu.gpscontroller.Utils.ProgressDialogUtils;
 import com.sciento.wumu.gpscontroller.Utils.ToastUtils;
 import com.sciento.wumu.gpscontroller.View.SlideListView;
@@ -57,14 +61,11 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
 import butterknife.BindView;
@@ -348,7 +349,6 @@ public class DeviceFragment extends DeviceBaseFragment {
 
     @Subscribe//用于获取id
     public void onEvent(String event) {
-        //Toast.makeText(getActivity(), event.toString(), Toast.LENGTH_SHORT).show();
         boundMessage.clear();
         boundMessage.add(event);
     }
@@ -361,7 +361,9 @@ public class DeviceFragment extends DeviceBaseFragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void getDeviceInfo(CurrentLocation currentLocation){
 //        handler.sendEmptyMessage(MSG_TEST);
-        ToastUtils.makeShortText(currentLocation.getDeviceId(),getActivity());
+//        ToastUtils.makeShortText(currentLocation.getDeviceId(),getActivity());
+
+
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -380,6 +382,8 @@ public class DeviceFragment extends DeviceBaseFragment {
                 handler.sendEmptyMessage(MSG_UPDATEUI);
             }
         }
+
+
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -407,14 +411,37 @@ public class DeviceFragment extends DeviceBaseFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void alarm(Alarm alarm) {
-        Notification notification = new Notification.Builder(getActivity())
-                .setTicker(getString(R.string.str_alarm))
-                .setSmallIcon(R.drawable.ic_priority_high_black_24dp)
-                .setContentText(getString(R.string.str_device_name) + alarm.getDeviceName() + getString(R.string.str_show_alarm))
-                .setDefaults(Notification.DEFAULT_ALL)
-                .build();
-        nm.notify(NOTIFICATION_ID, notification);
+        if (alarm.isAlarm()) {
+            Notification notification = new Notification.Builder(getActivity())
+                    .setTicker(getString(R.string.str_alarm))
+                    .setSmallIcon(R.drawable.ic_priority_high_black_24dp)
+                    .setContentText(getString(R.string.str_device_name) + alarm.getDeviceName() + getString(R.string.str_show_alarm))
+                    .setDefaults(Notification.DEFAULT_ALL)
+                    .build();
+            nm.notify(NOTIFICATION_ID, notification);
+        }
     }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void fenceAlarm(FenceAlarm fenceAlarm) {
+        if (fenceAlarm.isFencealarm()) {
+            Notification notification = new Notification.Builder(getActivity())
+                    .setTicker(getString(R.string.str_alarm))
+                    .setSmallIcon(R.drawable.ic_priority_high_black_24dp)
+                    .setContentText(getString(R.string.str_device_name) + fenceAlarm.getDeviceid() + getString(R.string.str_out_fence))
+                    .setDefaults(Notification.DEFAULT_ALL)
+                    .build();
+            nm.notify(NOTIFICATION_ID, notification);
+        }
+    }
+
+
+    @Subscribe
+    public void freshUi(FreshUi freshUi) {
+        handler.sendEmptyMessage(MSG_SWIPE_REFRESH);
+    }
+
+
 
 
 
@@ -476,6 +503,7 @@ public class DeviceFragment extends DeviceBaseFragment {
     public void DidRequestError(String errormessage) {
         ToastUtils.makeShortText(errormessage, getActivity());
     }
+
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {

@@ -89,6 +89,8 @@ public class DevicePlus {
                 try {
                     IMqttToken subToken = DeviceLocation.getInstance().getMqttAndroidClient()
                             .subscribe("topic://"+jsonDevice.getId()+"/up/location", 0);
+                    IMqttToken subTokenAlarm = DeviceLocation.getInstance().getMqttAndroidClient()
+                            .subscribe("topic://" + jsonDevice.getId() + "/up/alarm", 0);
                     IMqttToken subTokenConn = DeviceLocation.getInstance().getMqttAndroidClient()
                             .subscribe("$SYS/brokers/"+Config.MQTTNODE+
                                     "/clients/"+jsonDevice.getId()+"/connected", 0);
@@ -97,7 +99,7 @@ public class DevicePlus {
                                     "/clients/" + jsonDevice.getId() + "/disconnected", 0);
 //                    DeviceLocation.getInstance().getMqttAndroidClient()
 //                            .subscribe(Config.TOPICSEND, 0);
-                    subToken.setActionCallback(iMqttActionListener);
+//                    subToken.setActionCallback(iMqttActionListener);
                     //deviceListener.didSubscribeState(null,100);
 
                 } catch (MqttException e) {

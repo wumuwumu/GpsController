@@ -1,11 +1,15 @@
 package com.sciento.wumu.gpscontroller.HomeModule;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,11 +30,12 @@ import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.MyLocationStyle;
-import com.sciento.wumu.gpscontroller.ControllerModule.FenceActivity;
 import com.sciento.wumu.gpscontroller.DeviceModule.DeviceBaseFragment;
 import com.sciento.wumu.gpscontroller.DeviceSdk.DeviceController;
 import com.sciento.wumu.gpscontroller.DeviceSdk.FenceListener;
+import com.sciento.wumu.gpscontroller.Event.FreshUi;
 import com.sciento.wumu.gpscontroller.Event.UnbindDevice;
+import com.sciento.wumu.gpscontroller.Model.DeviceConfig;
 import com.sciento.wumu.gpscontroller.Model.DeviceState;
 import com.sciento.wumu.gpscontroller.Model.Fence;
 import com.sciento.wumu.gpscontroller.Model.FenceInfo;
@@ -57,6 +62,7 @@ public class HomeFragment extends Fragment implements
         AMap.OnMyLocationChangeListener {
 
 
+    public static HashMap<String, Circle> deviceCircle = new HashMap<>();
     private final int MSG_UPDATE_ALARM_BTN = 623;
     private final int MSG_GET_FENCE_STATE = 624;
     @BindView(R.id.main_mapview)
@@ -72,9 +78,12 @@ public class HomeFragment extends Fragment implements
     Button btnControlAlarm;
     @BindView(R.id.btn_close_windows)
     Button btnCloseWindows;
-    boolean enswitch;
-    String deviceId;
+    boolean enswitch = false;
+    boolean enConfig = false;
+    String deviceId = null;
     Fence fence = null;
+    @BindView(R.id.btn_control_config)
+    Button btnControlConfig;
     Handler homeHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -83,11 +92,17 @@ public class HomeFragment extends Fragment implements
                     for (int i = 0; i < DeviceBaseFragment.deviceslist.size(); i++) {
                         if (DeviceBaseFragment.deviceslist.get(i).getJsonDevice().getId().equals(deviceId)) {
                             enswitch = DeviceBaseFragment.deviceslist.get(i).getJsonDevice().isPower();
+                            enConfig = DeviceBaseFragment.deviceslist.get(i).getJsonDevice().isConfig();
                             if (!enswitch) {
                                 btnControlAlarm.setText(getString(R.string.str_close));
 
                             } else {
                                 btnControlAlarm.setText(getString(R.string.str_open));
+                            }
+                            if (!enConfig) {
+                                btnControlConfig.setText(getString(R.string.str_close));
+                            } else {
+                                btnControlConfig.setText(getString(R.string.str_open));
                             }
                         }
                     }
@@ -107,7 +122,6 @@ public class HomeFragment extends Fragment implements
     private AMapLocationClientOption mLocationOption;
     private HashMap<String, Marker> deviceMap = new HashMap<>();
     private HashMap<String, CurrentLocation> deviceCurrentLocation = new HashMap<>();
-    private HashMap<String, Circle> deviceCircle = new HashMap<>();
     private boolean enopen = false;
     FenceListener fenceListener = new FenceListener() {
         @Override
@@ -125,9 +139,7 @@ public class HomeFragment extends Fragment implements
                     etFenceValue.setEnabled(false);
                     enopen = true;
                     btnControlFence.setText(R.string.str_close);
-
             }
-
         }
     };
     FenceListener fenceCancelListener = new FenceListener() {
@@ -203,6 +215,9 @@ public class HomeFragment extends Fragment implements
             @Override
             public boolean onMarkerClick(Marker marker) {
                 deviceId = marker.getTitle();
+                if (deviceId == null || deviceId.isEmpty()) {
+                    return false;
+                }
                 homeHandler.sendEmptyMessage(MSG_UPDATE_ALARM_BTN);
                 homeHandler.sendEmptyMessage(MSG_GET_FENCE_STATE);
                 llDeviceController.setVisibility(View.VISIBLE);
@@ -225,12 +240,33 @@ public class HomeFragment extends Fragment implements
                 }
                 DeviceState deviceState = new DeviceState();
                 deviceState.setPower(enswitch);
-                deviceState.setDeviceId(deviceId);
                 DeviceLocation.getInstance().sendRetainMessage("topic://" + deviceId + "/down/power",
                         LocationToJson.getStateJson(deviceState));
+                EventBus.getDefault().post(new FreshUi());
             }
 
         });
+
+        btnControlConfig.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (enConfig) {
+                    btnControlConfig.setText(getString(R.string.str_close));
+                    enConfig = false;
+
+                } else {
+                    btnControlConfig.setText(getString(R.string.str_open));
+                    enConfig = true;
+                }
+                DeviceConfig deviceConfig = new DeviceConfig();
+                deviceConfig.setConfig(enConfig);
+                DeviceLocation.getInstance().sendRetainMessage("topic://" + deviceId + "/down/config",
+                        LocationToJson.getJson(deviceConfig));
+                EventBus.getDefault().post(new FreshUi());
+            }
+        });
+
+
         btnCloseWindows.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -295,6 +331,7 @@ public class HomeFragment extends Fragment implements
                     sendFence.setState(false);
                     DeviceController.getInstance().sendFenceInfo(sendFence, fenceCancelListener);
                 }
+
             }
         });
     }
@@ -348,6 +385,7 @@ public class HomeFragment extends Fragment implements
     public void updateLocation(CurrentLocation currentLocation) {
         LatLng latlng = new LatLng(currentLocation.getLatitude()
                 , currentLocation.getLongitude());
+        String deviceId = currentLocation.getDeviceId();
         deviceCurrentLocation.put(currentLocation.getDeviceId(), currentLocation);
         if (deviceMap.get(currentLocation.getDeviceId()) == null) {
             MarkerOptions markerOption = new MarkerOptions().icon(BitmapDescriptorFactory
@@ -366,6 +404,26 @@ public class HomeFragment extends Fragment implements
             deviceMap.get(currentLocation.getDeviceId()).setRotateAngle(currentLocation.getBearing());
             deviceMap.get(currentLocation.getDeviceId()).setTitle(currentLocation.getDeviceId());
         }
+
+
+        if (deviceCircle.get(deviceId) != null) {
+            if (!deviceCircle.get(deviceId).contains(latlng)) {
+                NotificationManager notifyManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+                Notification notification = new NotificationCompat.Builder(getActivity())
+                        //设置小图标
+                        .setSmallIcon(R.drawable.ic_priority_high_black_24dp)
+                        //设置通知标题
+                        .setContentTitle(getString(R.string.str_alarm))
+                        //设置通知内容
+                        .setContentText(getString(R.string.str_device_id) + currentLocation.getDeviceId()
+                                + getString(R.string.str_out_fence))
+                        .setDefaults(Notification.DEFAULT_ALL)
+                        .build();
+                notifyManager.notify(100, notification);
+            }
+        }
+
+
 
 
     }

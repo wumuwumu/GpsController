@@ -6,6 +6,7 @@ import com.amap.api.location.AMapLocation;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.sciento.wumu.gpscontroller.Model.DeviceConfig;
 import com.sciento.wumu.gpscontroller.Model.DeviceState;
 import com.sciento.wumu.gpscontroller.Model.JsonDevice;
 import com.sciento.wumu.gpscontroller.Model.SendFenceBean;
@@ -52,11 +53,17 @@ public class LocationToJson {
 
                  T result = gson.fromJson(jsonData, type);
                  return result;
-             }
+    }
 
 
     public static String getStateJson(DeviceState deviceState){
         final String json = gson.toJson(deviceState);
+
+        return json;
+    }
+
+    public static String getJson(DeviceConfig deviceConfig) {
+        final String json = gson.toJson(deviceConfig);
 
         return json;
     }
