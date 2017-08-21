@@ -39,6 +39,7 @@ import com.sciento.wumu.gpscontroller.Model.DeviceConfig;
 import com.sciento.wumu.gpscontroller.Model.DeviceState;
 import com.sciento.wumu.gpscontroller.Model.Fence;
 import com.sciento.wumu.gpscontroller.Model.FenceInfo;
+import com.sciento.wumu.gpscontroller.Model.FirstGetAllFence;
 import com.sciento.wumu.gpscontroller.Model.SendFenceBean;
 import com.sciento.wumu.gpscontroller.MqttModule.CurrentLocation;
 import com.sciento.wumu.gpscontroller.MqttModule.DeviceLocation;
@@ -109,7 +110,8 @@ public class HomeFragment extends Fragment implements
                     break;
 
                 case MSG_GET_FENCE_STATE:
-                    DeviceController.getInstance().getfencestate(deviceId);
+
+                    DeviceController.getInstance().getfencestate((String) msg.obj);
                     break;
             }
             super.handleMessage(msg);
@@ -122,6 +124,7 @@ public class HomeFragment extends Fragment implements
     private AMapLocationClientOption mLocationOption;
     private HashMap<String, Marker> deviceMap = new HashMap<>();
     private HashMap<String, CurrentLocation> deviceCurrentLocation = new HashMap<>();
+    private HashMap<String, Fence> deviceFenceList = new HashMap<>();
     private boolean enopen = false;
     FenceListener fenceListener = new FenceListener() {
         @Override
@@ -218,8 +221,11 @@ public class HomeFragment extends Fragment implements
                 if (deviceId == null || deviceId.isEmpty()) {
                     return false;
                 }
+                Message fenceMessage = new Message();
+                fenceMessage.obj = deviceId;
+                fenceMessage.what = MSG_GET_FENCE_STATE;
                 homeHandler.sendEmptyMessage(MSG_UPDATE_ALARM_BTN);
-                homeHandler.sendEmptyMessage(MSG_GET_FENCE_STATE);
+                homeHandler.sendMessage(fenceMessage);
                 llDeviceController.setVisibility(View.VISIBLE);
 
 
@@ -338,11 +344,14 @@ public class HomeFragment extends Fragment implements
 
     @Subscribe
     public void getFence(FenceInfo fenceinfo) {
-//        ToastUtils.makeShortText("dddd",FenceActivity.this);
         if (fenceinfo.getResult().getQueryParam() == null) {
             btnControlFence.setText(getString(R.string.str_close));
             enopen = false;
         } else {
+            String mDeviceId = fenceinfo.getResult().getQueryParam().getId();
+            Fence mFence = fenceinfo.getResult().getQueryParam();
+            deviceFenceList.put(mDeviceId, mFence);
+
             if (fenceinfo.getResult().getQueryParam().getId().equals(deviceId)) {
                 if (fenceinfo.getStatus() == 1) {
                     fence = fenceinfo.getResult().getQueryParam();
@@ -382,6 +391,16 @@ public class HomeFragment extends Fragment implements
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
+    public void firstGetAllFence(FirstGetAllFence firstGetAllFence) {
+        for (int i = 0; i < DeviceBaseFragment.deviceslist.size(); i++) {
+            Message fenceMessage = new Message();
+            fenceMessage.obj = DeviceBaseFragment.deviceslist.get(i).getJsonDevice().getId();
+            fenceMessage.what = MSG_GET_FENCE_STATE;
+            homeHandler.sendMessage(fenceMessage);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void updateLocation(CurrentLocation currentLocation) {
         LatLng latlng = new LatLng(currentLocation.getLatitude()
                 , currentLocation.getLongitude());
@@ -405,25 +424,28 @@ public class HomeFragment extends Fragment implements
             deviceMap.get(currentLocation.getDeviceId()).setTitle(currentLocation.getDeviceId());
         }
 
-
-        if (deviceCircle.get(deviceId) != null) {
-            if (!deviceCircle.get(deviceId).contains(latlng)) {
-                NotificationManager notifyManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
-                Notification notification = new NotificationCompat.Builder(getActivity())
-                        //设置小图标
-                        .setSmallIcon(R.drawable.ic_priority_high_black_24dp)
-                        //设置通知标题
-                        .setContentTitle(getString(R.string.str_alarm))
-                        //设置通知内容
-                        .setContentText(getString(R.string.str_device_id) + currentLocation.getDeviceId()
-                                + getString(R.string.str_out_fence))
-                        .setDefaults(Notification.DEFAULT_ALL)
-                        .build();
-                notifyManager.notify(100, notification);
+        if (deviceFenceList.get(deviceId) != null) {
+            Fence judgeFence = deviceFenceList.get(deviceId);
+            if (judgeFence.isState()) {
+                double diffLat = Math.abs(judgeFence.getLatitude() - currentLocation.getLatitude());
+                double diffLon = Math.abs(judgeFence.getLongitude() - currentLocation.getLongitude());
+                double diff = diffLat * diffLat + diffLon * diffLon;
+                if (diff < judgeFence.getRadius() * judgeFence.getRadius()) {
+                    NotificationManager notifyManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+                    Notification notification = new NotificationCompat.Builder(getActivity())
+                            //设置小图标
+                            .setSmallIcon(R.drawable.ic_priority_high_black_24dp)
+                            //设置通知标题
+                            .setContentTitle(getString(R.string.str_alarm))
+                            //设置通知内容
+                            .setContentText(getString(R.string.str_device_id) + currentLocation.getDeviceId()
+                                    + getString(R.string.str_out_fence))
+                            .setDefaults(Notification.DEFAULT_ALL)
+                            .build();
+                    notifyManager.notify(100, notification);
+                }
             }
         }
-
-
 
 
     }

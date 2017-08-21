@@ -13,6 +13,7 @@
     <!-- Strings related to login -->
     <string name="prompt_password">密码</string>
     <string name="action_sign_in">登录</string>
+    <string name="action_sign_in_underline"><b>登录</b></string>
     <string name="error_invalid_password">密码太短</string>
     <string name="error_incorrect_password">密码不正确</string>
     <string name="error_field_required">不能为空</string>
@@ -31,6 +32,8 @@
     <string name="permission_rationale">"需要读取联系人的权限"</string>
     <string name="error_network_dis">请检查网络</string>
     <string name="error_link_server">服务器连接异常</string>
+    <string name="str_vehicle_alarm">车载报警器</string>
+    <string name="str_sceurity_experts_around_you">你身边的安全专家</string>
 
     <!--注册-->
     <string name="str_register">注册</string>
@@ -38,7 +41,7 @@
     <string name="str_verification_code">验证码</string>
     <string name="str_usename">用户名</string>
     <string name="re_enter_passwwd">重新输入密码</string>
-    <string name="str_have_account_login">有账号，请登录</string>
+    <string name="str_have_account_login">有账号，请</string>
     <string name="error_double_passwd_different">两次输入的密码不同</string>
     <string name="count_down">%ss</string>
     <string name="str_register_ing">正在注册</string>

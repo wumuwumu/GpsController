@@ -21,8 +21,6 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -31,7 +29,6 @@ import com.sciento.wumu.gpscontroller.ConfigModule.Config;
 import com.sciento.wumu.gpscontroller.ConfigModule.UserState;
 import com.sciento.wumu.gpscontroller.ConfigModule.UserStateCode;
 import com.sciento.wumu.gpscontroller.R;
-import com.sciento.wumu.gpscontroller.Utils.Md5Util;
 import com.sciento.wumu.gpscontroller.Utils.ProgressDialogUtils;
 import com.sciento.wumu.gpscontroller.Utils.RegexUtils;
 import com.sciento.wumu.gpscontroller.Utils.ToastUtils;
@@ -91,6 +88,7 @@ public class UserLoginActivity extends AppCompatActivity {
                     editor.putString("passwd", password);
                     editor.putBoolean("remember",remember);
                     editor.putString("referer", UserState.referer);
+                    editor.putString("uId", UserState.uId);
                     editor.putLong("time", System.currentTimeMillis() / 1000);
                     editor.commit();
 

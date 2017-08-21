@@ -13,4 +13,6 @@
 
     <color name="line_gray">#c7c7c7</color>
     <color name="color_red">#FF0033</color>
+    <color name="color_get_vertifition">#89dddddd</color>
+    <color name="color_bottom">#fafafa</color>
 </resources>

@@ -1,15 +1,26 @@
-package com.sciento.wumu.gpscontroller.Model;
+package com.sciento.wumu.gpscontroller.Model.Model;
 
 /**
- * Created by wumu on 17-8-19.
+ * Created by wumu on 17-8-4.
  */
 
-public class ConfigFenceBean {
+public class SendFenceBean {
+
+    private String id;    // 设备id
     private Double longitude;    // 经度
     private Double latitude;     // 纬度
     private Double radius;       // 半径
-
     private boolean state;       //是否启用
+
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public Double getLongitude() {
         return longitude;
     }

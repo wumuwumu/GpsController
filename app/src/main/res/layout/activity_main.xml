@@ -11,8 +11,9 @@
     <com.sciento.wumu.gpscontroller.View.NoScrollViewPager
         android:id="@+id/viewpager"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_height="100dp"
+        android:layout_weight="1"
+        android:background="@color/color_bottom">
 
 
 
@@ -23,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="?android:attr/windowBackground"
+        android:background="@color/color_bottom"
         app:menu="@menu/bottom_navigation" />
 
 </LinearLayout>

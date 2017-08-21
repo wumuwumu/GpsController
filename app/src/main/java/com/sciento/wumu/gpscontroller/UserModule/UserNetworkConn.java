@@ -12,8 +12,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.sciento.wumu.gpscontroller.CommonModule.AppContext;
 import com.sciento.wumu.gpscontroller.ConfigModule.Config;
-import com.sciento.wumu.gpscontroller.ConfigModule.UserStateCode;
 import com.sciento.wumu.gpscontroller.ConfigModule.UserState;
+import com.sciento.wumu.gpscontroller.ConfigModule.UserStateCode;
 
 import org.json.JSONException;
 import org.json.JSONObject;

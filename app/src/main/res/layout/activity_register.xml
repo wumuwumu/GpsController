@@ -4,48 +4,70 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background"
     android:fitsSystemWindows="true"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:background="@color/colorPrimary"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.sciento.wumu.gpscontroller.UserModule.RegisterActivity">
+    tools:context="com.sciento.wumu.gpscontroller.UserModule.UserRegisterActivity">
 
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:paddingTop="20dp">
 
-        <ImageView android:src="@drawable/logo"
+        <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="72dp"
-            android:layout_marginBottom="24dp"
-            android:layout_gravity="center_horizontal" />
+            android:layout_height="120dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/gpslogo" />
+
+        <TextView
+            style="@style/TextTheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:text="@string/str_vehicle_alarm"
+            android:textScaleX="1"
+            android:textSize="25sp" />
+
+        <TextView
+            style="@style/TextTheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="5dp"
+            android:text="@string/str_sceurity_experts_around_you"
+            android:textSize="10sp" />
 
         <LinearLayout
             android:id="@+id/layout_phone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/iv_logo"
+            android:layout_marginTop="10dp"
             android:orientation="horizontal">
             <!-- mobile number -->
             <android.support.design.widget.TextInputLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textColorHint="@color/colorWhite"
 
                 >
                 <com.sciento.wumu.gpscontroller.View.CleanEditText
                     android:id="@+id/tv_mobile"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:hint="@string/str_phone"
                     android:inputType="number"
-                    android:hint="@string/str_phone" />
+                    android:textColor="@color/colorWhite" />
             </android.support.design.widget.TextInputLayout>
 
             <Button
@@ -53,9 +75,8 @@
                 android:layout_width="70dp"
                 android:layout_height="35dp"
                 android:layout_gravity="center"
-                android:background="#f3f4f8"
+                android:background="@color/color_get_vertifition"
                 android:text="@string/send_verification_code"
-                android:textColor="#B1B1B3"
                 android:textSize="12sp" />
 
         </LinearLayout>
@@ -64,49 +85,57 @@
         <!-- identify code -->
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:textColorHint="@color/colorWhite">
             <com.sciento.wumu.gpscontroller.View.CleanEditText
                 android:id="@+id/tv_identify_code"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:hint="@string/str_verification_code"
                 android:inputType="number"
-                android:hint="@string/str_verification_code" />
+                android:textColor="@color/colorWhite" />
         </android.support.design.widget.TextInputLayout>
 
     <!-- Name Label -->
     <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:textColorHint="@color/colorWhite">
         <com.sciento.wumu.gpscontroller.View.CleanEditText
             android:id="@+id/tv_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="@string/str_usename"
             android:inputType="textPersonName"
-            android:hint="@string/str_usename" />
+            android:textColor="@color/colorWhite" />
     </android.support.design.widget.TextInputLayout>
 
     <!-- Password Label -->
     <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:textColorHint="@color/colorWhite">
         <com.sciento.wumu.gpscontroller.View.CleanEditText
             android:id="@+id/tv_enter_passwd"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="@string/prompt_password"
             android:inputType="textPassword"
-            android:hint="@string/prompt_password"/>
+            android:textColor="@color/colorWhite" />
     </android.support.design.widget.TextInputLayout>
 
     <!-- Password Re-enter Label -->
     <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:textColorHint="@color/colorWhite">
         <com.sciento.wumu.gpscontroller.View.CleanEditText
             android:id="@+id/tv_reEnterPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="@string/re_enter_passwwd"
             android:inputType="textPassword"
-            android:hint="@string/re_enter_passwwd"/>
+            android:textColor="@color/colorWhite" />
     </android.support.design.widget.TextInputLayout>
 
         <!-- Signup Button -->
@@ -114,18 +143,35 @@
             android:id="@+id/btn_signup"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
             android:layout_marginTop="24dp"
-            android:layout_marginBottom="24dp"
+            android:background="@drawable/login_button"
             android:padding="12dp"
-            android:text="@string/str_register"/>
+            android:text="@string/str_register"
+            android:textColor="@color/colorWhite" />
 
-        <TextView android:id="@+id/tv_link_login"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:text="@string/str_have_account_login"
+            android:layout_gravity="center"
             android:gravity="center"
-            android:textSize="16dip"/>
+            android:orientation="horizontal">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/str_have_account_login"
+                android:textSize="16dip" />
+
+            <TextView
+                android:id="@+id/tv_link_login"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/action_sign_in_underline"
+                android:textColor="@color/colorPrimary" />
+        </LinearLayout>
+
 
     </LinearLayout>
 

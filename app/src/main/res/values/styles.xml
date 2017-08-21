@@ -5,6 +5,7 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="android:windowBackground">@drawable/welcome</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
@@ -15,6 +16,10 @@
         <!--<item name="android:colorBackground">#000000</item> 也可以设置背景色以及menu中的其他属性-->
 
         <item name="overlapAnchor">false</item>
+    </style>
+
+    <style name="TextTheme" parent="android:Widget.TextView">
+        <item name="android:textColor">@color/colorWhite</item>
     </style>
 
 </resources>

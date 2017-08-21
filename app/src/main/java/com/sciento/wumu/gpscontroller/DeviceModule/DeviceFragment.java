@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -45,14 +44,12 @@ import com.sciento.wumu.gpscontroller.Event.DeviceConnected;
 import com.sciento.wumu.gpscontroller.Event.DeviceDisconnect;
 import com.sciento.wumu.gpscontroller.Event.FenceAlarm;
 import com.sciento.wumu.gpscontroller.Event.FreshUi;
-import com.sciento.wumu.gpscontroller.Event.NetworkState;
 import com.sciento.wumu.gpscontroller.Event.UnbindDevice;
 import com.sciento.wumu.gpscontroller.Model.FenceInfo;
+import com.sciento.wumu.gpscontroller.Model.FirstGetAllFence;
 import com.sciento.wumu.gpscontroller.MqttModule.CurrentLocation;
-import com.sciento.wumu.gpscontroller.MqttModule.DeviceLocation;
 import com.sciento.wumu.gpscontroller.MqttModule.LocationToJson;
 import com.sciento.wumu.gpscontroller.R;
-import com.sciento.wumu.gpscontroller.Utils.NetworkUtils;
 import com.sciento.wumu.gpscontroller.Utils.ProgressDialogUtils;
 import com.sciento.wumu.gpscontroller.Utils.ToastUtils;
 import com.sciento.wumu.gpscontroller.View.SlideListView;
@@ -218,14 +215,6 @@ public class DeviceFragment extends DeviceBaseFragment {
 
     private void initData() {
         nm = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
-
-//        userphone = sharedPreferences.getString("Uid", "");
-//        token = sharedPreferences.getString("Token", "");
-//
-//        if (userphone.isEmpty() && token.isEmpty()) {
-//            UserState.issignin = false;
-//        }
-//        ToastUtils.makeLongText(UserState.uId,getActivity());
 
     }
 
@@ -406,7 +395,7 @@ public class DeviceFragment extends DeviceBaseFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void getmqtt(MqttMessage message) {
-        ToastUtils.makeShortText(message.toString(), getActivity());
+//        ToastUtils.makeShortText(message.toString(), getActivity());
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -436,6 +425,7 @@ public class DeviceFragment extends DeviceBaseFragment {
     }
 
 
+
     @Subscribe
     public void freshUi(FreshUi freshUi) {
         handler.sendEmptyMessage(MSG_SWIPE_REFRESH);
@@ -459,6 +449,7 @@ public class DeviceFragment extends DeviceBaseFragment {
                 devicePlus.setDeviceListener(deviceListener);
                 devicePlus.setSubscribe(true);
             }
+            EventBus.getDefault().post(new FirstGetAllFence());
             handler.sendEmptyMessage(MSG_UPDATE_DEVICE_LIST);
 //            Toast.makeText(getActivity(), changeErrorCodeToString(errorcode), Toast.LENGTH_SHORT)
 //                    .show();

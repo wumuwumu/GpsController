@@ -1,51 +1,40 @@
 package com.sciento.wumu.gpscontroller.DeviceModule;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.sciento.wumu.gpscontroller.R;
-import com.yanzhenjie.permission.AndPermission;
-import com.yanzhenjie.permission.Rationale;
-import com.yanzhenjie.permission.RationaleListener;
-
 
 import org.greenrobot.eventbus.EventBus;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import cn.bingoogolapple.androidcommon.adapter.BGARecyclerViewAdapter;
 import cn.bingoogolapple.photopicker.activity.BGAPhotoPickerActivity;
 import cn.bingoogolapple.qrcode.core.QRCodeView;
 import cn.bingoogolapple.qrcode.zxing.QRCodeDecoder;
 
 
-public class QRcodeActivity extends AppCompatActivity implements QRCodeView.Delegate {
+public class QRcodeActivity extends QRBaseActivity implements QRCodeView.Delegate {
     private static final String TAG = QRcodeActivity.class.getSimpleName();
     private static final int REQUEST_CODE_SETTING = 200;
     private static final int REQUEST_CODE_CHOOSE_QRCODE_FROM_GALLERY = 1111;
-
+    private final int MSG_QRCODE_GET = 12;
+    private final int MSG_QRCODE_UPDATE = 13;
     @BindView(R.id.qrcodeview)
     QRCodeView QRCodeView;
     @BindView(R.id.btn_qrcode_back)
     Button btnQrcodeBack;
     @BindView(R.id.btn_find_image)
     Button btnFindImage;
-
-    private final int MSG_QRCODE_GET = 12;
-    private final int MSG_QRCODE_UPDATE = 13;
-
-
     Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -70,7 +59,7 @@ public class QRcodeActivity extends AppCompatActivity implements QRCodeView.Dele
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_qrcode);
         ButterKnife.bind(this);
-        getpermission();
+
         init();
 
     }
@@ -81,21 +70,7 @@ public class QRcodeActivity extends AppCompatActivity implements QRCodeView.Dele
         QRCodeView.startSpot();
     }
 
-    private void getpermission() {
-        AndPermission.with(this)
-                .requestCode(REQUEST_CODE_SETTING)
-                .permission(
-                        Manifest.permission.CAMERA,
-                        Manifest.permission.VIBRATE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ).rationale(new RationaleListener() {
 
-            @Override
-            public void showRequestPermissionRationale(int arg0, Rationale arg1) {
-                AndPermission.rationaleDialog(QRcodeActivity.this, arg1).show();
-            }
-        }).start();
-    }
 
     @Override
     protected void onStart() {

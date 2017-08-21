@@ -94,6 +94,7 @@ class BaseActivity extends AppCompatActivity {
                         Manifest.permission.WAKE_LOCK,
                         Manifest.permission.WRITE_SETTINGS,
                         Manifest.permission.WAKE_LOCK,
+                        Manifest.permission.CAMERA,
                         Manifest.permission.BODY_SENSORS
                 ).rationale(new RationaleListener() {
 

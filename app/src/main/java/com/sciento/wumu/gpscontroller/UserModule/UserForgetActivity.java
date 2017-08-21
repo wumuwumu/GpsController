@@ -8,21 +8,11 @@ import android.support.v7.widget.AppCompatButton;
 import android.view.View;
 import android.widget.Button;
 
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.sciento.wumu.gpscontroller.CommonModule.AppContext;
-import com.sciento.wumu.gpscontroller.ConfigModule.Config;
 import com.sciento.wumu.gpscontroller.R;
 import com.sciento.wumu.gpscontroller.Utils.ProgressDialogUtils;
 import com.sciento.wumu.gpscontroller.Utils.ToastUtils;
 import com.sciento.wumu.gpscontroller.Utils.VerifyCodeManager;
 import com.sciento.wumu.gpscontroller.View.CleanEditText;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,9 +36,8 @@ public class UserForgetActivity extends AppCompatActivity {
     AppCompatButton btnResetPasswd;
 
 
-    private VerifyCodeManager codeManager;
+
     private final int MSG_STATUS = 35;
-    private final int MSG_FAIL = 36;
     Handler registerHandler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -71,6 +60,31 @@ public class UserForgetActivity extends AppCompatActivity {
             super.handleMessage(msg);
         }
     };
+    private final int MSG_FAIL = 36;
+    private VerifyCodeManager codeManager;
+    Handler registerHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_STATUS:
+                    ProgressDialogUtils.getInstance().dismiss();
+                    if (((Integer) msg.obj).intValue() == 1) {
+                        ToastUtils.makeShortText(getString(R.string.str_register_success), UserForgetActivity.this);
+                        finish();
+                    } else {
+                        ToastUtils.makeShortText(getString(R.string.str_register_fail), UserForgetActivity.this);
+
+                    }
+                    break;
+                case MSG_FAIL:
+                    ProgressDialogUtils.getInstance().dismiss();
+                    ToastUtils.makeShortText(getString(R.string.str_link_server_fail), UserForgetActivity.this);
+                    break;
+            }
+            super.handleMessage(msg);
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

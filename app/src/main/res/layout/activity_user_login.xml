@@ -20,10 +20,29 @@
         android:orientation="vertical">
 
         <ImageView
-            android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:layout_width="wrap_content"
+            android:layout_height="120dp"
             android:layout_gravity="center"
-            android:src="@drawable/logo" />
+            android:src="@drawable/gpslogo" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="5dp"
+            android:text="@string/str_vehicle_alarm"
+            android:textColor="@color/colorWhite"
+            android:textScaleX="1"
+            android:textSize="25sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="5dp"
+            android:text="@string/str_sceurity_experts_around_you"
+            android:textColor="@color/colorWhite"
+            android:textSize="10sp" />
 
         <!-- Login progress -->
         <ProgressBar
@@ -39,6 +58,7 @@
             android:id="@+id/email_login_form"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
             android:orientation="vertical">
 
 
@@ -46,7 +66,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="#47090909"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="5dp">
 
 
                 <android.support.design.widget.TextInputLayout
@@ -101,7 +122,6 @@
                     android:id="@+id/cb_remember_passwd"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:shadowColor=""
                     android:text="@string/str_remember_passwd"
                     android:textColor="@color/colorWhite" />
             </LinearLayout>
@@ -114,7 +134,9 @@
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
                 android:layout_marginTop="25dp"
+                android:background="@drawable/login_button"
                 android:text="@string/action_sign_in"
+                android:textColor="@color/colorWhite"
                 android:textStyle="bold" />
 
         </LinearLayout>
@@ -138,7 +160,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="|" />
+                android:text="|"
+                android:textColor="@color/colorWhite" />
 
             <TextView
                 android:id="@+id/tv_forget_passwd"
